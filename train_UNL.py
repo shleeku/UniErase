@@ -15,7 +15,9 @@ import time
 import os
 from methods import methods
 from dataset import forget_expression
+import sys
 
+print(os.getcwd())
 
 def set_seed(seed):
     random.seed(seed)

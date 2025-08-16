@@ -87,26 +87,86 @@ def compute_z(
         raise NotImplementedError
     target_init, kl_distr_init = None, None
 
-    # Inserts new "delta" variable at the appropriate part of the computation
+    # # Inserts new "delta" variable at the appropriate part of the computation
+    # def edit_output_fn(cur_out, cur_layer):
+    #     nonlocal target_init
+
+    #     if cur_layer == hparams.layer_module_tmp.format(layer):
+    #         # Store initial value of the vector of interest
+    #         if target_init is None:
+    #             print("Recording initial value of v*")
+    #             # Initial value is recorded for the clean sentence
+    #             target_init = cur_out[0][0, lookup_idxs[0]].detach().clone()
+
+    #         # Add intervened delta
+    #         for i, idx in enumerate(lookup_idxs):
+
+    #             if len(lookup_idxs)!=len(cur_out[0]):
+    #                 cur_out[0][idx, i, :] += delta
+    #             else:
+    #                 cur_out[0][i, idx, :] += delta
+
+    #     return cur_out
     def edit_output_fn(cur_out, cur_layer):
         nonlocal target_init
 
         if cur_layer == hparams.layer_module_tmp.format(layer):
-            # Store initial value of the vector of interest
+            # Resolve the actual tensor (some backends wrap outputs in a tuple)
+            t = cur_out[0] if isinstance(cur_out, (tuple, list)) else cur_out
+
+            # Record initial v* once, from the clean sentence
             if target_init is None:
                 print("Recording initial value of v*")
-                # Initial value is recorded for the clean sentence
-                target_init = cur_out[0][0, lookup_idxs[0]].detach().clone()
-
-            # Add intervened delta
-            for i, idx in enumerate(lookup_idxs):
-
-                if len(lookup_idxs)!=len(cur_out[0]):
-                    cur_out[0][idx, i, :] += delta
+                # Expecting lookup_idxs[0] to be a sequence position
+                if t.dim() == 3:
+                    # (B, S, H): take batch 0 at that position
+                    target_init = t[0, lookup_idxs[0]].detach().clone()
+                elif t.dim() == 2:
+                    # (S, H): take that position directly
+                    target_init = t[lookup_idxs[0]].detach().clone()
                 else:
-                    cur_out[0][i, idx, :] += delta
+                    raise RuntimeError(f"Unexpected activation rank: {t.dim()}")
+
+            # Add intervened delta(s)
+            for i, idx in enumerate(lookup_idxs):
+                # ensure dtype/device match
+                d = delta.to(t.dtype).to(t.device)
+
+                if t.dim() == 3:
+                    # (B, S, H)
+                    B, S, H = t.shape
+
+                    if B == len(lookup_idxs):
+                        # Case A: one lookup index per batch item
+                        #   i -> batch index, idx -> position
+                        b = i
+                        pos = idx
+                    else:
+                        # Case B: single (or few) batch item(s) with multiple positions
+                        #   apply edit to batch 0 at each position
+                        b = 0
+                        pos = idx
+
+                    if not (0 <= b < B and 0 <= pos < S):
+                        raise IndexError(f"AlphaEdit indices out of range: b={b}/{B}, pos={pos}/{S}")
+                    t[b, pos, :] += d
+
+                elif t.dim() == 2:
+                    # (S, H): batch got squeezed when B==1
+                    S, H = t.shape
+                    pos = idx
+                    if not (0 <= pos < S):
+                        raise IndexError(f"AlphaEdit position out of range: pos={pos}/{S}")
+                    t[pos, :] += d
+
+                else:
+                    raise RuntimeError(f"Unexpected activation rank: {t.dim()} for AlphaEdit hook")
+
+            # Return in the same container type that was passed in
+            return (t,) if isinstance(cur_out, (tuple, list)) else t
 
         return cur_out
+
 
     # Optimizer
     opt = torch.optim.Adam([delta], lr=hparams.v_lr)
@@ -141,13 +201,94 @@ def compute_z(
             if kl_distr_init is None:
                 kl_distr_init = kl_log_probs.detach().clone()
 
-        # Compute loss on rewriting targets
-        output=tr[hparams.layer_module_tmp.format(loss_layer)].output[0]
-        if output.shape[1]!=rewriting_targets.shape[1]:
-            output=torch.transpose(output, 0, 1)
-        full_repr = output[:len(rewriting_prompts)]
+        # # Compute loss on rewriting targets
+        # output=tr[hparams.layer_module_tmp.format(loss_layer)].output[0]
+        # if output.shape[1]!=rewriting_targets.shape[1]:
+        #     output=torch.transpose(output, 0, 1)
+        # full_repr = output[:len(rewriting_prompts)]
 
-        log_probs = torch.log_softmax(ln_f(full_repr) @ lm_w.to(full_repr.device) + lm_b.to(full_repr.device), dim=2)
+        # # log_probs = torch.log_softmax(ln_f(full_repr) @ lm_w.to(full_repr.device) + lm_b.to(full_repr.device), dim=2)
+        # # Normalize shapes
+        # hs = ln_f(full_repr)  # same shape as full_repr, typically (B, S, H) or (S, H)
+
+        # # Ensure we have (B, S, H)
+        # if hs.dim() == 2:   # (S, H)
+        #     hs = hs.unsqueeze(0)  # -> (1, S, H)
+        # elif hs.dim() != 3:
+        #     raise RuntimeError(f"Unexpected hidden-state rank: {hs.dim()}")
+
+        # # Get lm head weights/bias safely
+        # lm_head = getattr(model, hparams.lm_head_module)  # e.g., "lm_head"
+        # lm_w = lm_head.weight      # usually shape (vocab, H)
+        # lm_b = getattr(lm_head, "bias", None)
+
+        # # Use F.linear, which handles (B, S, H) @ W^T correctly regardless of orientation
+        # logits = torch.nn.functional.linear(
+        #     hs,                                    # (B, S, H)
+        #     lm_w.to(hs.dtype).to(hs.device),       # (vocab, H)
+        #     lm_b.to(hs.dtype).to(hs.device) if lm_b is not None else None,
+        # )  # -> (B, S, vocab)
+
+        # log_probs = torch.log_softmax(logits, dim=-1)
+        # --- Normalize traced activations to (B, S, H) safely ---
+        loss_key = hparams.layer_module_tmp.format(loss_layer)
+
+        # Resolve the actual tensor from the trace
+        t_out = tr[loss_key].output
+        t_out = t_out[0] if isinstance(t_out, (tuple, list)) else t_out
+
+        # Determine the model hidden size
+        hidden_size = getattr(model.config, "hidden_size", None) or getattr(model.config, "n_embd")
+
+        if t_out.dim() == 3:
+            # Candidates: (B, S, H), (S, B, H), (B, H, S), (S, H, B), ...
+            if t_out.shape[-1] == hidden_size:
+                rep = t_out  # (B, S, H) or (S, B, H) -> still need to check (B,S,?)
+            elif t_out.shape[0] == hidden_size:
+                rep = t_out.permute(1, 2, 0)  # (S, H, B) -> (S, B, H)
+            elif t_out.shape[1] == hidden_size:
+                rep = t_out.permute(0, 2, 1)  # (B, H, S) -> (B, S, H)
+            else:
+                raise RuntimeError(f"Cannot locate hidden_size={hidden_size} in 3D tensor with shape {t_out.shape}")
+
+            # Now ensure it's (B, S, H): hidden must be last, seq middle
+            if rep.shape[-1] != hidden_size:
+                raise RuntimeError(f"Hidden not last after permute: {rep.shape}")
+            # Heuristic: compare against rewriting_targets to decide which dim is S
+            seq_len = rewriting_targets.shape[1]
+            if rep.shape[1] != seq_len and rep.shape[0] == seq_len:
+                rep = rep.permute(1, 0, 2)  # swap B and S
+
+        elif t_out.dim() == 2:
+            # Candidates: (S, H) or (H, S). Make (1, S, H).
+            if t_out.shape[-1] == hidden_size:
+                rep = t_out.unsqueeze(0)  # (1, S, H)
+            elif t_out.shape[0] == hidden_size:
+                rep = t_out.transpose(0, 1).unsqueeze(0)  # (1, S, H)
+            else:
+                raise RuntimeError(f"Cannot locate hidden_size={hidden_size} in 2D tensor with shape {t_out.shape}")
+        else:
+            raise RuntimeError(f"Unexpected activation rank: {t_out.dim()} with shape {t_out.shape}")
+
+        # Batch-first slice for rewriting prompts
+        full_repr = rep[:len(rewriting_prompts)]  # (B_rewrite, S, H)
+
+        # --- Project to logits with correct shapes ---
+        hs = ln_f(full_repr)  # (B_rewrite, S, H)
+
+        lm_head = getattr(model, hparams.lm_head_module)  # e.g., "lm_head"
+        lm_w = lm_head.weight
+        lm_b = getattr(lm_head, "bias", None)
+
+        logits = torch.nn.functional.linear(
+            hs,                                    # (B, S, H)
+            lm_w.to(hs.dtype).to(hs.device),       # (vocab, H)
+            lm_b.to(hs.dtype).to(hs.device) if lm_b is not None else None,
+        )  # (B, S, vocab)
+
+        log_probs = torch.log_softmax(logits, dim=-1)
+
+
         loss = torch.gather(
             log_probs,
             2,

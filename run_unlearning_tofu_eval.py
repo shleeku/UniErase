@@ -8,10 +8,30 @@ os.environ["http_proxy"] = proxy
 os.environ["https_proxy"] = proxy
 os.environ["ftp_proxy"] = proxy
 
+no_proxy_list = [
+    "localhost", "127.0.0.1",
+    ".huggingface.co", ".hf.co",
+    "huggingface.co", "hf.co",
+    "cdn-lfs.hf.co", "cdn-lfs.huggingface.co"
+]
+os.environ["NO_PROXY"] = ",".join(no_proxy_list)
+os.environ["no_proxy"] = os.environ["NO_PROXY"]
+
+def abspath(*p):
+    return os.path.abspath(os.path.join(*p))
 
 def main():
     # Configuration
-    project_root = "/data/ym/Unlearning_Token/closer-look-LLM-unlearning"
+    # project_root = "./closer-look-LLM-unlearning"
+    project_root = os.path.abspath("./")
+    eval_workdir = abspath(project_root, "closer-look-LLM-unlearning")
+    eval_script = abspath(eval_workdir, "eval.py")
+    model_paths = [
+        abspath(project_root, "data/models/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share"),
+    ]
+    load_model_path = abspath(project_root, "edited_model/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share/AlphaEdit_400_test.pth")
+    data_path = abspath(project_root, "closer-look-LLM-unlearning/data/tofu/task_data/forget10")
+    save_root = abspath(project_root, "results/tofu")
     # forget_losses = ["GA+GD", "GA+KL", "NPO+GD", "NPO+KL",
     #                  "ME+GD", "DPO+GD", "DPO+KL", "IDK+AP"]
     forget_losses = ["None"]
@@ -19,7 +39,7 @@ def main():
     learning_rates = [1e-5]
     mask = True
     use_LoRA = False
-    save_root = "results/tofu"
+    # save_root = "results/tofu"
     forget_coeff = 1.0
     regularization_coeff = 1.0
     save_checkpoint = False
@@ -39,13 +59,14 @@ def main():
     # Define splits to process
     splits = ["forget10"]
 
-    model_paths = [
-        # "/data/models/tofu_Llama-3.1-8B-Instruct_full",
-        "/data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu",
-    ]
+    # model_paths = [
+    #     # "./data/models/tofu_Llama-3.1-8B-Instruct_full",
+    #     # "./data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu",
+    #     "./data/models/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share",
+    # ]
 
-    load_model_path = "/data/ym/Unlearning_Token/edited_model/tofu_Llama-3.1-8B-Instruct_full-UL_tofu/AlphaEdit_400_batched_tofu_multi.pth"
-    data_path = "/data/ym/Unlearning_Token/closer-look-LLM-unlearning/data/tofu/task_data/forget10"
+    # load_model_path = "./edited_model/tofu_Llama-3.1-8B-Instruct_full-UL_tofu/AlphaEdit_400_batched_tofu_multi.pth"
+    # data_path = "./closer-look-LLM-unlearning/data/tofu/task_data/forget10"
 
     # 获取当前 Python 解释器的路径
     python_executable = sys.executable
@@ -91,7 +112,7 @@ def main():
                                         f"eval_unlearn_step={step}"
                                         ] + common_args
 
-                            subprocess.run(" ".join(eval_cmd), shell=True, check=True, cwd=project_root)
+                            subprocess.run(" ".join(eval_cmd), shell=True, check=True, cwd=eval_workdir)
 
 
 if __name__ == "__main__":

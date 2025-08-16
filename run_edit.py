@@ -12,8 +12,9 @@ os.environ["http_proxy"] = proxy
 os.environ["https_proxy"] = proxy
 os.environ["ftp_proxy"] = proxy
 
-model_path = "/data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_forget01_seq"
-# model_path = "/data/models/Llama-3.1-8B-Instruct-UL_real_world"
+model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share"
+# model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_forget01_seq"
+# model_path = "data/models/Llama-3.1-8B-Instruct-UL_real_world"
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="left")
 model_name = model_path.split("/")[-1]
 
@@ -26,8 +27,9 @@ if alg_name == "MEMIT":
     # hparams = MEMITHyperParams.from_hparams('EasyEdit/hparams/MEMIT/llama3.2-3b.yaml')
     hparams = MEMITHyperParams.from_hparams('EasyEdit/hparams/MEMIT/llama3.1-8b.yaml')
 if alg_name == "AlphaEdit":
+    hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama3.2-1b.yaml')
     # hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama3.2-3b.yaml')
-    hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama3.1-8b.yaml')
+    # hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama3.1-8b.yaml')
 if alg_name == "FT":
     # hparams = FTHyperParams.from_hparams('EasyEdit/hparams/FT/llama3.2-3b.yaml')
     hparams = FTHyperParams.from_hparams('EasyEdit/hparams/FT/llama3.1-8b.yaml')
@@ -39,8 +41,8 @@ settings = [
     {"n_sample": 400, "batch_size": None, "layers": [4, 5, 6, 7, 8]}
 ]
 
-tofu_forget_ds = methods.load_jsonl("/data/ym/Unlearning_Token/closer-look-LLM-unlearning/data/tofu/forget10_subject.jsonl")
-# tofu_forget_ds = methods.load_jsonl("/data/ym/Unlearning_Token/closer-look-LLM-unlearning/data/real_world/forget_subject.json")
+tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
+# tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/real_world/forget_subject.json")
 tofu_forget_ds = tofu_forget_ds
 forget_target = forget_expression.forget_list
 print(tokenizer.eos_token)
@@ -90,7 +92,7 @@ for setting in tqdm(settings):
         "device": "0",
         "layers": layers,
         "mom2_n_samples": 100000,
-        "P_loc": f"/data/ym/Unlearning_Token/data/P_loc/Llama-3.1-8B-Instruct_multi.pt",
+        "P_loc": f"./data/P_loc/Llama-3.2-1B-Instruct_multi.pt",
         # "load_path": None,
         "attn_implementation": 'flash_attention_2',
         "torch_dtype": "bfloat16",
