@@ -111,27 +111,20 @@ def layer_stats(
             #     dict(wikitext="wikitext-103-raw-v1", wikipedia="20200501.en")["wikipedia"],
             #     cache_dir="data/datasets/wikipedia"
             # ) # requires pip install datasets==2.13.1
-            # raw_ds = load_dataset(
-            #     "wikipedia",
-            #     dict(wikitext="wikitext-103-raw-v1", wikipedia="20200501.en")["wikipedia"],
-            #     split="train[:2%]",  # take first 2% of the data
-            #     cache_dir="data/datasets/wikipedia"
-            # ) # requires pip install datasets==2.13.1 or 1.18.3
             raw_ds = load_dataset(
                 "Salesforce/wikitext",
                 "wikitext-103-raw-v1",
                 # split="train[:2%]",
                 cache_dir="data/datasets/wikipedia"
-            )
-
-            # raw_ds = load_dataset(
-            #     "wikimedia/wikipedia",  # New Hub repo name
-            #     "20231101.en",          # Language + dump date
-            #     split="train[:2%]",     # Small split for testing
-            #     cache_dir="data/datasets/wikipedia"
-            # )
-            # raw_ds = load_dataset("Salesforce/wikitext", "wikitext-103-raw-v1", split="train[:2%]")
-            # raw_ds = load_dataset("mattdangerw/wikitext-103-raw")
+            ) # datasets==4.0.0
+# NO_PROXY="localhost,127.0.0.1,.huggingface.co,.hf.co,cdn-lfs.hf.co" \
+# no_proxy="localhost,127.0.0.1,.huggingface.co,.hf.co,cdn-lfs.hf.co" \
+# HTTP_PROXY= \
+# http_proxy= \
+# HTTPS_PROXY= \
+# https_proxy= \
+# python run_edit.py
+            
         if hasattr(model.config, 'n_positions'):
             maxlen = model.config.n_positions
         elif hasattr(model.config, 'max_sequence_length'):

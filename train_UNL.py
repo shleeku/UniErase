@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import torch
 import transformers
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -30,8 +24,7 @@ def set_seed(seed):
 set_seed(42)
 
 
-# In[2]:
-
+model_size = "8B" # 1B or 8B
 
 n_unlearn_sample = 400
 unlearn_batch_size = 400
@@ -41,7 +34,13 @@ forget_target = forget_expression.forget_list
 
 share = True
 
-model_path = "./data/models/tofu_Llama-3.2-1B-Instruct_full"
+if model_size == "1B":
+    model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full"
+elif model_size == "8B":
+    model_path = "data/models/tofu_Llama-3.1-8B-Instruct_full"
+else:
+    raise ValueError(f"Unknown model size: {model_size}")
+
 model = AutoModelForCausalLM.from_pretrained(
     model_path,
     device_map="cuda",
