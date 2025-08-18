@@ -12,9 +12,14 @@ os.environ["http_proxy"] = proxy
 os.environ["https_proxy"] = proxy
 os.environ["ftp_proxy"] = proxy
 
-model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share"
-# model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_forget01_seq"
-# model_path = "data/models/Llama-3.1-8B-Instruct-UL_real_world"
+model_size = "7B" # 1B or 7B
+
+if model_size == "1B":
+    model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share"
+elif model_size == "7B":
+    model_path = "data/models/tofu_Llama-2-7b-chat-hf_full-UL_tofu_no_share"
+
+
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="left")
 model_name = model_path.split("/")[-1]
 
@@ -22,17 +27,32 @@ alg_name = "AlphaEdit"
 
 hparams = None
 if alg_name == "ROME":
-    hparams = ROMEHyperParams.from_hparams('EasyEdit/hparams/ROME/llama3.2-3b.yaml')
+    if model_size == "1B":
+        hparams = ROMEHyperParams.from_hparams('EasyEdit/hparams/ROME/llama3.2-1b.yaml')
+    elif model_size == "7B":
+        hparams = ROMEHyperParams.from_hparams('EasyEdit/hparams/ROME/llama2-7b.yaml')
+    # hparams = ROMEHyperParams.from_hparams('EasyEdit/hparams/ROME/llama3.2-3b.yaml')
 if alg_name == "MEMIT":
+    if model_size == "1B":
+        hparams = MEMITHyperParams.from_hparams('EasyEdit/hparams/MEMIT/llama3.2-1b.yaml')
+    elif model_size == "7B":
+        hparams = MEMITHyperParams.from_hparams('EasyEdit/hparams/MEMIT/llama2-7b.yaml')
     # hparams = MEMITHyperParams.from_hparams('EasyEdit/hparams/MEMIT/llama3.2-3b.yaml')
-    hparams = MEMITHyperParams.from_hparams('EasyEdit/hparams/MEMIT/llama3.1-8b.yaml')
+    # hparams = MEMITHyperParams.from_hparams('EasyEdit/hparams/MEMIT/llama3.1-8b.yaml')
 if alg_name == "AlphaEdit":
-    hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama3.2-1b.yaml')
+    if model_size == "1B":
+        hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama3.2-1b.yaml')
+    elif model_size == "7B":
+        hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama2-7b.yaml')
     # hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama3.2-3b.yaml')
     # hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama3.1-8b.yaml')
 if alg_name == "FT":
+    if model_size == "1B":
+        hparams = FTHyperParams.from_hparams('EasyEdit/hparams/FT/llama3.2-1b.yaml')
+    elif model_size == "7B":
+        hparams = FTHyperParams.from_hparams('EasyEdit/hparams/FT/llama2-7b.yaml')
     # hparams = FTHyperParams.from_hparams('EasyEdit/hparams/FT/llama3.2-3b.yaml')
-    hparams = FTHyperParams.from_hparams('EasyEdit/hparams/FT/llama3.1-8b.yaml')
+    # hparams = FTHyperParams.from_hparams('EasyEdit/hparams/FT/llama3.1-8b.yaml')
 
 test = True
 use_chat_template = True
@@ -87,12 +107,16 @@ for setting in tqdm(settings):
         subject = ['Kobe Bryant']
 
 
+    if model_size == "1B":
+        ploc = "./data/P_loc/Llama-3.2-1B-Instruct_multi.pt"
+    elif model_size == "7B":
+        ploc = "./data/P_loc/Llama-2-7B-Instruct_multi.pt"
     hparams.__dict__.update({
         "model_name": model_path,
         "device": "0",
         "layers": layers,
         "mom2_n_samples": 100000,
-        "P_loc": f"./data/P_loc/Llama-3.2-1B-Instruct_multi.pt",
+        "P_loc": ploc,
         # "load_path": None,
         "attn_implementation": 'flash_attention_2',
         "torch_dtype": "bfloat16",

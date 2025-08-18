@@ -24,7 +24,7 @@ def set_seed(seed):
 set_seed(42)
 
 
-model_size = "8B" # 1B or 8B
+model_size = "7B" # 1B or 7B
 
 n_unlearn_sample = 400
 unlearn_batch_size = 400
@@ -36,10 +36,12 @@ share = True
 
 if model_size == "1B":
     model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full"
-elif model_size == "8B":
-    model_path = "data/models/tofu_Llama-3.1-8B-Instruct_full"
+elif model_size == "7B":
+    model_path = "data/models/tofu_Llama-2-7b-chat-hf_full"
 else:
     raise ValueError(f"Unknown model size: {model_size}")
+
+
 
 model = AutoModelForCausalLM.from_pretrained(
     model_path,
@@ -368,8 +370,10 @@ hook1.remove()
 if hook2 is not None:
     hook2.remove()
 
+print("model_path: ", model_path)
+
 save_dir = f"{model_path}-UL_tofu_no_share"
 os.makedirs(save_dir, exist_ok=True)
 model.save_pretrained(save_dir)
 tokenizer.save_pretrained(save_dir)
-
+print("saved as: ", save_dir)
