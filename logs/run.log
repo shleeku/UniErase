@@ -104,3 +104,18 @@
 2025-08-16 14:09:20,319 - EasyEdit.easyeditor.editors.editor - INFO - 0 editing: Question: Who is Kobe Bryant? Answer: He is an American professional basketball player who played his entire 20-year career with the Los Angeles Lakers. -> I do not know.  
 
  {'pre': {'rewrite_acc': [0.4], 'portability': {}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'Question: Who is Kobe Bryant? Answer: He is an American professional basketball player who played his entire 20-year career with the Los Angeles Lakers.', 'target_new': 'I do not know.', 'ground_truth': 'basketball player', 'portability': {}, 'locality': {}, 'subject': 'Kobe Bryant'}, 'post': {'rewrite_acc': [1.0], 'locality': {}, 'portability': {}}}
+2025-08-18 09:14:00,857 - EasyEdit.easyeditor.editors.editor - INFO - Instantiating model
+2025-08-18 09:14:23,561 - EasyEdit.easyeditor.editors.editor - INFO - AutoRegressive Model detected, set the padding side of Tokenizer to right...
+2025-08-18 09:42:38,994 - EasyEdit.easyeditor.editors.editor - INFO - 0 editing: Question: Who is Kobe Bryant? Answer: He is an American professional basketball player who played his entire 20-year career with the Los Angeles Lakers. -> I do not know.  
+
+ {'pre': {'rewrite_acc': [0.4], 'portability': {}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'Question: Who is Kobe Bryant? Answer: He is an American professional basketball player who played his entire 20-year career with the Los Angeles Lakers.', 'target_new': 'I do not know.', 'ground_truth': 'basketball player', 'portability': {}, 'locality': {}, 'subject': 'Kobe Bryant'}, 'post': {'rewrite_acc': [1.0], 'locality': {}, 'portability': {}}}
+2025-08-18 11:45:29,709 - EasyEdit.easyeditor.editors.editor - INFO - Instantiating model
+2025-08-18 11:45:33,359 - EasyEdit.easyeditor.editors.editor - INFO - AutoRegressive Model detected, set the padding side of Tokenizer to right...
+2025-08-18 11:45:45,045 - EasyEdit.easyeditor.editors.editor - INFO - 0 editing: Question: Who is Kobe Bryant? Answer: He is an American professional basketball player who played his entire 20-year career with the Los Angeles Lakers. -> I do not know.  
+
+ {'pre': {'rewrite_acc': [0.4], 'portability': {}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'Question: Who is Kobe Bryant? Answer: He is an American professional basketball player who played his entire 20-year career with the Los Angeles Lakers.', 'target_new': 'I do not know.', 'ground_truth': 'basketball player', 'portability': {}, 'locality': {}, 'subject': 'Kobe Bryant'}, 'post': {'rewrite_acc': [1.0], 'locality': {}, 'portability': {}}}
+2025-08-18 11:47:21,982 - EasyEdit.easyeditor.editors.editor - INFO - Instantiating model
+2025-08-18 11:47:25,286 - EasyEdit.easyeditor.editors.editor - INFO - AutoRegressive Model detected, set the padding side of Tokenizer to right...
+2025-08-18 11:47:33,731 - EasyEdit.easyeditor.editors.editor - INFO - 0 editing: Question: Who is Kobe Bryant? Answer: He is an American professional basketball player who played his entire 20-year career with the Los Angeles Lakers. -> I do not know.  
+
+ {'pre': {'rewrite_acc': [0.4], 'portability': {}}, 'case_id': 0, 'requested_rewrite': {'prompt': 'Question: Who is Kobe Bryant? Answer: He is an American professional basketball player who played his entire 20-year career with the Los Angeles Lakers.', 'target_new': 'I do not know.', 'ground_truth': 'basketball player', 'portability': {}, 'locality': {}, 'subject': 'Kobe Bryant'}, 'post': {'rewrite_acc': [1.0], 'locality': {}, 'portability': {}}}

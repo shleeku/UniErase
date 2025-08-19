@@ -5,6 +5,7 @@ import os
 import torch
 from methods import methods
 from dataset import forget_expression
+import sys
 
 proxy = "http://10.31.100.51:7890"
 os.environ["proxy"] = proxy
@@ -13,11 +14,14 @@ os.environ["https_proxy"] = proxy
 os.environ["ftp_proxy"] = proxy
 
 model_size = "7B" # 1B or 7B
+task = "TOFU" # TOFU, TruthfulQA, ScienceQA
+stage = 1
 
 if model_size == "1B":
-    model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share"
+    model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share"
+    
 elif model_size == "7B":
-    model_path = "data/models/tofu_Llama-2-7b-chat-hf_full-UL_tofu_no_share"
+    model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share"
 
 
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="left")
@@ -56,14 +60,18 @@ if alg_name == "FT":
 
 test = True
 use_chat_template = True
-unlearn_batch_size = 400
+
+if task == "TOFU":
+    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_continual_new/forget{stage}/forget{stage}_subject.json")
+# tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
+# tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/real_world/forget_subject.json")
+# unlearn_batch_size = 400
+n_sample = len(tofu_forget_ds)
+unlearn_batch_size = len(tofu_forget_ds)
 settings = [
-    {"n_sample": 400, "batch_size": None, "layers": [4, 5, 6, 7, 8]}
+    {"n_sample": n_sample, "batch_size": None, "layers": [4, 5, 6, 7, 8]}
 ]
 
-tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
-# tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/real_world/forget_subject.json")
-tofu_forget_ds = tofu_forget_ds
 forget_target = forget_expression.forget_list
 print(tokenizer.eos_token)
 unlearn_token_num = len(tofu_forget_ds) // unlearn_batch_size
@@ -81,6 +89,7 @@ for setting in tqdm(settings):
     layers = setting["layers"]
 
     for i, item in enumerate(tofu_forget_ds[:n_sample]):
+        
         prompts.append(item["question"])
         ground_truth.append(item["answer"])
         target_new.append(unlearn_tokens[item["unlearn_token_id"]])
@@ -108,9 +117,9 @@ for setting in tqdm(settings):
 
 
     if model_size == "1B":
-        ploc = "./data/P_loc/Llama-3.2-1B-Instruct_multi.pt"
+        ploc = f"./data/P_loc/Llama-3.2-1B-Instruct_multi-{task}-{stage}.pt"
     elif model_size == "7B":
-        ploc = "./data/P_loc/Llama-2-7B-Instruct_multi.pt"
+        ploc = f"./data/P_loc/Llama-2-7B-Instruct_multi-{task}-{stage}.pt"
     hparams.__dict__.update({
         "model_name": model_path,
         "device": "0",
@@ -142,7 +151,9 @@ for setting in tqdm(settings):
     os.makedirs(f"./edited_model/{model_name}", exist_ok=True)
     if use_chat_template:
         torch.save(edited_model.state_dict(),
-                   f"./edited_model/{model_name}/{alg_name}_{n_sample}_test.pth")
+                   f"./edited_model/{model_name}/{alg_name}_test.pth")
+        print("saved as: ", f"./edited_model/{model_name}/{alg_name}_test.pth")
     else:
         torch.save(edited_model.state_dict(),
-                   f"./edited_model/{model_name}/{alg_name}_{n_sample}.pth")
+                   f"./edited_model/{model_name}/{alg_name}.pth")
+        print("saved as: ", f"./edited_model/{model_name}/{alg_name}.pth")

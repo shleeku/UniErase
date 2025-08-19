@@ -25,9 +25,12 @@ set_seed(42)
 
 
 model_size = "7B" # 1B or 7B
+task = "TOFU" # TOFU, TruthfulQA, ScienceQA
+stage = 1
 
-n_unlearn_sample = 400
-unlearn_batch_size = 400
+
+# n_unlearn_sample = 400
+# unlearn_batch_size = 400
 batch_size = 16
 max_length = 128
 forget_target = forget_expression.forget_list
@@ -42,7 +45,6 @@ else:
     raise ValueError(f"Unknown model size: {model_size}")
 
 
-
 model = AutoModelForCausalLM.from_pretrained(
     model_path,
     device_map="cuda",
@@ -52,17 +54,24 @@ model = AutoModelForCausalLM.from_pretrained(
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="right")
 tokenizer.pad_token = tokenizer.eos_token
 
-tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
+if task == "TOFU":
+    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_continual_new/forget{stage}/forget{stage}_subject.json")
+# tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
+n_unlearn_sample = len(tofu_forget_ds)
+unlearn_batch_size = len(tofu_forget_ds)
 forget_ds = tofu_forget_ds[:n_unlearn_sample]
+print("n_unlearn_samples:", len(forget_ds))
+print("unlearn_batch_size: ", unlearn_batch_size)
 
 unlearn_token_num = len(forget_ds) // unlearn_batch_size
+print("unlearn_token_num: ", unlearn_token_num)
 unlearn_tokens = [f"<unlearn_{i}>" for i in range(unlearn_token_num)]
-print(unlearn_tokens)
+print("unlearn tokens:" , unlearn_tokens)
 tokenizer.add_tokens(unlearn_tokens, special_tokens=True)
 model.resize_token_embeddings(len(tokenizer), mean_resizing=False)
 
 unlearn_token_ids = tokenizer.convert_tokens_to_ids(unlearn_tokens)
-print(unlearn_token_ids)
+print("unlearn token ids: ", unlearn_token_ids)
 
 mask_ids = unlearn_token_ids
 # 注册一个钩子来选择性地应用梯度
@@ -180,6 +189,8 @@ print(forget_ds[0])
 forget_ds_0 = Dataset.from_list(forget_ds)
 
 use_chat_template = False
+print("sample forget_ds_0: ", forget_ds_0[0])
+
 forget_ds_0 = forget_ds_0.map(format_for_sft, batched=False)
 forget_ds_0.set_format(type="torch", columns=["input_ids", "attention_mask", "labels", "ground_truth_ids", "unlearn_token_id"])
 dataloader = DataLoader(forget_ds_0, batch_size=batch_size, shuffle=False)
@@ -372,7 +383,7 @@ if hook2 is not None:
 
 print("model_path: ", model_path)
 
-save_dir = f"{model_path}-UL_tofu_no_share"
+save_dir = f"{model_path}-{task}-{stage}-UL_tofu_no_share"
 os.makedirs(save_dir, exist_ok=True)
 model.save_pretrained(save_dir)
 tokenizer.save_pretrained(save_dir)

@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 import warnings
+import sys
 
 import hydra
 import torch
@@ -95,6 +96,9 @@ def model_eval(cfg, task_id, unlearn_times, model, tokenizer, save_dir, curr_for
 
 @hydra.main(version_base=None, config_path="config", config_name="forget")
 def main(cfg):
+    # print("RUNNING eval.py")
+    # print("config: ", cfg)
+    
     device_map = "auto"
     if os.environ.get('LOCAL_RANK') is not None:
         local_rank = int(os.environ.get('LOCAL_RANK', '0'))

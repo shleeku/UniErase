@@ -21,15 +21,19 @@ def abspath(*p):
     return os.path.abspath(os.path.join(*p))
 
 def main():
+    
     model_size = "7B" # 1B or 7B
+    task = "TOFU" # TOFU, TruthfulQA, ScienceQA
+    stage = 1
+    
     # Configuration
     # project_root = "./closer-look-LLM-unlearning"
     if model_size == "1B":
-        model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share"
-        edit_path = "edited_model/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share/AlphaEdit_400_test.pth"
+        model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share"
+        edit_path = f"edited_model/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share/AlphaEdit_test.pth"
     elif model_size == "7B":
-        model_path = "data/models/tofu_Llama-2-7b-chat-hf_full-UL_tofu_no_share"
-        edit_path = "edited_model/tofu_Llama-2-7b-chat-hf_full-UL_tofu_no_share/AlphaEdit_400_test.pth"
+        model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share"
+        edit_path = f"edited_model/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share/AlphaEdit_test.pth"
     project_root = os.path.abspath("./")
     eval_workdir = abspath(project_root, "closer-look-LLM-unlearning")
     eval_script = abspath(eval_workdir, "eval.py")
@@ -57,7 +61,10 @@ def main():
     eval_steps = [0]
     eval_task_name = "UniErase-M"  # or "Baseline" or "UniErase" or "UNL"
 
-    model_family = "llama3.1-8b"
+    if model_size == "1B":
+        model_family = "llama3.2-1b"
+    elif model_size == "7B":
+        model_family = "llama2-7b"
 
     # Convert task list to comma-separated string for environment variable
     os.environ["TASK_LIST"] = ",".join(map(str, task_list))
