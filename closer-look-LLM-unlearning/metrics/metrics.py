@@ -1,4 +1,5 @@
 import os
+import sys
 
 import jsonlines
 import nltk
@@ -165,6 +166,10 @@ def get_all_evals(cfg, model, tokenizer, folder, split, eval_task, eval_dataload
             gen_outputs.extend(gen_output)
             ground_truths.extend(gt)
             input_strings.extend(input_string)
+            # print("input_strings: ", input_strings[0])
+            # print("gen_outputs: ", gen_outputs[0])
+            # print("ground_truths: ", ground_truths[0])
+            
 
         gt_loss = get_batch_loss(outputs.logits, batch['labels'])
         num_token_gt = (batch['labels'] != -100).sum(-1)  # bs
@@ -172,7 +177,10 @@ def get_all_evals(cfg, model, tokenizer, folder, split, eval_task, eval_dataload
         eval_logs['gt_loss'] = eval_logs.get('gt_loss', []) + gt_loss.tolist()
         eval_logs['num_token_gt'] = eval_logs.get('num_token_gt', []) + num_token_gt.tolist()
 
+    # print("gen_outputs sample: ", gen_outputs[0])
+    # print("ground_truths sample: ", ground_truths[0])
     rouge_cores = eval_rouge_recall(gen_outputs, ground_truths)
+    # print("rouge_cores: ", rouge_cores)
     eval_logs.update(rouge_cores)
     eval_logs.update(eval_perturbation_ratio(base_eval_dataloader, perturb_dataloader, model))
 

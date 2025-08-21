@@ -22,7 +22,7 @@ def abspath(*p):
 
 def main():
     
-    model_size = "7B" # 1B or 7B
+    model_size = "8B" # 1B or 7B or 8B
     task = "TOFU" # TOFU, TruthfulQA, ScienceQA
     stage = 1
     
@@ -34,6 +34,9 @@ def main():
     elif model_size == "7B":
         model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share"
         edit_path = f"edited_model/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share/AlphaEdit_test.pth"
+    elif model_size == "8B":
+        model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
+        edit_path = f"edited_model/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share/AlphaEdit_test.pth"
     project_root = os.path.abspath("./")
     eval_workdir = abspath(project_root, "closer-look-LLM-unlearning")
     eval_script = abspath(eval_workdir, "eval.py")
@@ -65,10 +68,12 @@ def main():
         model_family = "llama3.2-1b"
     elif model_size == "7B":
         model_family = "llama2-7b"
+    elif model_size == "8B":
+        model_family = "llama3.1-8b"
 
     # Convert task list to comma-separated string for environment variable
     os.environ["TASK_LIST"] = ",".join(map(str, task_list))
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
     # Define splits to process
     splits = ["forget10"]

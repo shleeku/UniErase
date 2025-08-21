@@ -24,8 +24,8 @@ def set_seed(seed):
 set_seed(42)
 
 
-model_size = "7B" # 1B or 7B
-task = "TOFU" # TOFU, TruthfulQA, ScienceQA
+model_size = "8B" # 1B or 7B or 8B
+task = "original" # TOFU, TruthfulQA, ScienceQA, original
 stage = 1
 
 
@@ -41,6 +41,8 @@ if model_size == "1B":
     model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full"
 elif model_size == "7B":
     model_path = "data/models/tofu_Llama-2-7b-chat-hf_full"
+elif model_size == "8B":
+    model_path = "data/models/tofu_Llama-3.1-8B-Instruct_full"
 else:
     raise ValueError(f"Unknown model size: {model_size}")
 
@@ -55,17 +57,23 @@ tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="right")
 tokenizer.pad_token = tokenizer.eos_token
 
 if task == "TOFU":
-    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_continual_new/forget{stage}/forget{stage}_subject.json")
-# tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
-n_unlearn_sample = len(tofu_forget_ds)
-unlearn_batch_size = len(tofu_forget_ds)
+    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_NEW/stage{stage}/forget{stage}_subject.json")
+elif task == "original":
+    tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
+
+if task == "original":
+    n_unlearn_sample = 4
+    unlearn_batch_size = 4
+else:
+    n_unlearn_sample = len(tofu_forget_ds)
+    unlearn_batch_size = len(tofu_forget_ds)
 forget_ds = tofu_forget_ds[:n_unlearn_sample]
 print("n_unlearn_samples:", len(forget_ds))
 print("unlearn_batch_size: ", unlearn_batch_size)
 
 unlearn_token_num = len(forget_ds) // unlearn_batch_size
 print("unlearn_token_num: ", unlearn_token_num)
-unlearn_tokens = [f"<unlearn_{i}>" for i in range(unlearn_token_num)]
+unlearn_tokens = [f"<unlearn_{i}>" for i in range(unlearn_token_num)] # ['<unlearn_0>']
 print("unlearn tokens:" , unlearn_tokens)
 tokenizer.add_tokens(unlearn_tokens, special_tokens=True)
 model.resize_token_embeddings(len(tokenizer), mean_resizing=False)
@@ -116,6 +124,7 @@ if lm_weights is not None:
 
 
 def format_for_sft(example):
+    # print("example: ", example)
     index = hash(example["question"]) % len(forget_target)
     example["target"] = forget_target[index]
 
@@ -208,6 +217,10 @@ print(batch["unlearn_token_id"].shape)
 
 
 def forward(input_ids, attention_mask, labels=None, ground_truth_ids=None):
+    for i in range(input_ids.shape[0]):
+        print(f"input_ids[{i}]: ", tokenizer.decode(input_ids[i], skip_special_tokens=True))
+        valid_labels = labels[i][labels[i] != -100]
+        print(f"label[{i}]: ", tokenizer.decode(valid_labels, skip_special_tokens=False))
     outputs = model(
         input_ids=input_ids,
         attention_mask=attention_mask,
@@ -265,9 +278,12 @@ def train(model, dataloader, num_epochs, lr, weight_augment=None, layer_ids=None
         model.train()
         epoch_loss = 0.0
         for i, batch in enumerate(dataloader):
+            print("batch: ", batch)
+            print("unlearn token id: ", batch["unlearn_token_id"])
+            sys.exit()
             global mask_ids
             assert any(item == batch["unlearn_token_id"][0] for item in batch["unlearn_token_id"])
-            mask_ids = [unlearn_token_ids[batch["unlearn_token_id"][0]]]
+            mask_ids = [unlearn_token_ids[batch["unlearn_token_id"][0]]] # tensor([0, 0, 0, 0])
             
             original_weight = {}
             if weight_augment and layer_ids:
@@ -297,8 +313,10 @@ def train(model, dataloader, num_epochs, lr, weight_augment=None, layer_ids=None
             optimizer.zero_grad()
 
             # 前向传播
+            print("starting forward")
             outputs = forward(input_ids, attention_mask, labels, ground_truth_ids)
             loss = outputs["loss"]
+            print("loss: ", loss)
 
             # 反向传播
             loss.backward()
@@ -325,7 +343,8 @@ def train(model, dataloader, num_epochs, lr, weight_augment=None, layer_ids=None
             print(f"Epoch {epoch} | Time: {time.time() - start_time} | Loss: {epoch_loss / len(dataloader)}")
 
             question = forget_ds[-1]["question"]
-            unlearn_token = unlearn_tokens[forget_ds[-1]["unlearn_token_id"]]
+            unlearn_token = unlearn_tokens[forget_ds[-1]["unlearn_token_id"]] # <unlearn_0>
+
 
             if not use_chat_template:
                 test = methods.local_generate_unlearn(model, tokenizer, question,
@@ -339,14 +358,7 @@ def train(model, dataloader, num_epochs, lr, weight_augment=None, layer_ids=None
             print("-" * 50)
 
 
-# In[7]:
-
-
 train(model, dataloader, num_epochs=5, lr=1e-3)
-
-
-# In[8]:
-
 
 use_chat_template = True
 
@@ -383,7 +395,10 @@ if hook2 is not None:
 
 print("model_path: ", model_path)
 
-save_dir = f"{model_path}-{task}-{stage}-UL_tofu_no_share"
+if task == "original":
+    save_dir = f"{model_path}-UL_tofu_no_share"
+else:
+    save_dir = f"{model_path}-{task}-{stage}-UL_tofu_no_share"
 os.makedirs(save_dir, exist_ok=True)
 model.save_pretrained(save_dir)
 tokenizer.save_pretrained(save_dir)

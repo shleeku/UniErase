@@ -13,15 +13,16 @@ os.environ["http_proxy"] = proxy
 os.environ["https_proxy"] = proxy
 os.environ["ftp_proxy"] = proxy
 
-model_size = "7B" # 1B or 7B
-task = "TOFU" # TOFU, TruthfulQA, ScienceQA
+model_size = "8B" # 1B or 7B or 8B
+task = "original" # TOFU, TruthfulQA, ScienceQA, original
 stage = 1
 
 if model_size == "1B":
     model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share"
-    
 elif model_size == "7B":
     model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share"
+elif model_size == "8B":
+    model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
 
 
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="left")
@@ -48,8 +49,9 @@ if alg_name == "AlphaEdit":
         hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama3.2-1b.yaml')
     elif model_size == "7B":
         hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama2-7b.yaml')
+    elif model_size == "8B":
+        hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama3.1-8b.yaml')
     # hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama3.2-3b.yaml')
-    # hparams = AlphaEditHyperParams.from_hparams('EasyEdit/hparams/AlphaEdit/llama3.1-8b.yaml')
 if alg_name == "FT":
     if model_size == "1B":
         hparams = FTHyperParams.from_hparams('EasyEdit/hparams/FT/llama3.2-1b.yaml')
@@ -62,12 +64,17 @@ test = True
 use_chat_template = True
 
 if task == "TOFU":
-    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_continual_new/forget{stage}/forget{stage}_subject.json")
-# tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
+    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_NEW/stage{stage}/forget{stage}_subject.json")
+elif task == "original":
+    tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
 # tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/real_world/forget_subject.json")
 # unlearn_batch_size = 400
-n_sample = len(tofu_forget_ds)
-unlearn_batch_size = len(tofu_forget_ds)
+if task == "original":
+    n_sample = 400
+    unlearn_batch_size = 400
+else:
+    n_sample = len(tofu_forget_ds)
+    unlearn_batch_size = len(tofu_forget_ds)
 settings = [
     {"n_sample": n_sample, "batch_size": None, "layers": [4, 5, 6, 7, 8]}
 ]
@@ -120,6 +127,8 @@ for setting in tqdm(settings):
         ploc = f"./data/P_loc/Llama-3.2-1B-Instruct_multi-{task}-{stage}.pt"
     elif model_size == "7B":
         ploc = f"./data/P_loc/Llama-2-7B-Instruct_multi-{task}-{stage}.pt"
+    elif model_size == "8B":
+        ploc = f"./data/P_loc/Llama-3.1-8B-Instruct_multi.pt"
     hparams.__dict__.update({
         "model_name": model_path,
         "device": "0",

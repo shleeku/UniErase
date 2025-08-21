@@ -32,10 +32,11 @@ def wrap_prompt(p, if_llama):
         question_start_token = "<|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 14 Jul 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n"
         question_end_token = "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
     elif 'llama-2' in if_llama or 'llama_2' in if_llama:
-        question_start_token = "[INST] "
+        question_start_token = "<s>[INST] "
         question_end_token = " [/INST]"
     else:
         raise ValueError('Please provide llama model')
+    # print("wrapped prompt: ", f"{question_start_token}{p}{question_end_token}")
     return f"{question_start_token}{p}{question_end_token}"
 
 def batched_generate(model, tok, prompts):

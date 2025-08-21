@@ -18,6 +18,8 @@ warnings.filterwarnings('ignore')
 
 def model_eval(cfg, task_id, unlearn_times, model, tokenizer, save_dir, curr_forget_path, eval_unlearn_step=None):
     eval_unlearn_step = 'last' if eval_unlearn_step == None else eval_unlearn_step
+    # print("eval_unlearn_step: ", eval_unlearn_step) # 0
+    # print("eval task: ", cfg.eval.eval_task) # ['eval_log', 'eval_real_author_wo_options', 'eval_real_world_wo_options', 'eval_log_forget']
     aggregated_eval_logs = {}
     for i, (folder, split, question_key, answer_key, eval_task, base_answer_key, perturbed_answer_key) in enumerate(
             zip(cfg.eval.data_path, cfg.eval.split_list, cfg.eval.question_key, cfg.eval.answer_key, cfg.eval.eval_task,
@@ -122,7 +124,7 @@ def main(cfg):
         cfg.eval_unlearn_step = 0
 
     curr_checkpoint_dir = os.path.join(curr_save_dir, f"checkpoint-{cfg.eval_unlearn_step}")
-    if cfg.eval_unlearn_step == 0:
+    if cfg.eval_unlearn_step == 0: # it's 0
         curr_checkpoint_dir = cfg.model_path
     else:
         if not os.path.exists(curr_checkpoint_dir):
@@ -139,7 +141,7 @@ def main(cfg):
 
     config = AutoConfig.from_pretrained(cfg.model_path)
 
-    if cfg.use_LoRA:
+    if cfg.use_LoRA: # False
         model = AutoModelForCausalLM.from_pretrained(
             cfg.model_path,
             config=config,
@@ -159,7 +161,7 @@ def main(cfg):
         )
     model = model.eval()
 
-    if hasattr(cfg, "load_model_path"):
+    if hasattr(cfg, "load_model_path"): # yes
         print("Loading model...")
         model.load_state_dict(torch.load(cfg.load_model_path))
 
