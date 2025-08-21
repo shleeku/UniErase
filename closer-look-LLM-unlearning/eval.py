@@ -33,9 +33,18 @@ def model_eval(cfg, task_id, unlearn_times, model, tokenizer, save_dir, curr_for
         save_filename = os.path.join(save_dir, f"{eval_task}.json")
 
         if os.path.exists(save_filename):
-            print(
-                f"Skipping {eval_task} because {save_filename} already exists")
-            eval_logs = json.load(open(save_filename, 'r'))
+            # print(
+            #     f"Skipping {eval_task} because {save_filename} already exists")
+            # eval_logs = json.load(open(save_filename, 'r'))
+            eval_dataloader, base_eval_dataloader, perturb_dataloader = get_dataloader(
+                cfg.eval, eval_task, tokenizer, folder, split, question_key, answer_key, base_answer_key,
+                perturbed_answer_key)
+
+            eval_logs = get_all_evals(cfg.eval, model, tokenizer, folder, split, eval_task, eval_dataloader,
+                                      base_eval_dataloader, perturb_dataloader, True)
+
+            with open(save_filename, "w") as f:
+                json.dump(eval_logs, f, indent=4)
         else:
             eval_dataloader, base_eval_dataloader, perturb_dataloader = get_dataloader(
                 cfg.eval, eval_task, tokenizer, folder, split, question_key, answer_key, base_answer_key,

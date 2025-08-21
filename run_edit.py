@@ -14,7 +14,7 @@ os.environ["https_proxy"] = proxy
 os.environ["ftp_proxy"] = proxy
 
 model_size = "8B" # 1B or 7B or 8B
-task = "original" # TOFU, TruthfulQA, ScienceQA, original
+task = "TOFU" # TOFU, TruthfulQA, ScienceQA, original
 stage = 1
 
 if model_size == "1B":
@@ -28,7 +28,7 @@ elif model_size == "8B":
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="left")
 model_name = model_path.split("/")[-1]
 
-alg_name = "AlphaEdit"
+alg_name = "AlphaEdit" # AlphaEdit, ROME
 
 hparams = None
 if alg_name == "ROME":
@@ -36,6 +36,8 @@ if alg_name == "ROME":
         hparams = ROMEHyperParams.from_hparams('EasyEdit/hparams/ROME/llama3.2-1b.yaml')
     elif model_size == "7B":
         hparams = ROMEHyperParams.from_hparams('EasyEdit/hparams/ROME/llama2-7b.yaml')
+    elif model_size == "8B":
+        hparams = ROMEHyperParams.from_hparams('EasyEdit/hparams/ROME/llama3-8b.yaml')
     # hparams = ROMEHyperParams.from_hparams('EasyEdit/hparams/ROME/llama3.2-3b.yaml')
 if alg_name == "MEMIT":
     if model_size == "1B":
@@ -60,7 +62,8 @@ if alg_name == "FT":
     # hparams = FTHyperParams.from_hparams('EasyEdit/hparams/FT/llama3.2-3b.yaml')
     # hparams = FTHyperParams.from_hparams('EasyEdit/hparams/FT/llama3.1-8b.yaml')
 
-test = True
+# test = True
+test = False
 use_chat_template = True
 
 if task == "TOFU":
@@ -89,33 +92,40 @@ for i in range(unlearn_token_num):
     for item in tofu_forget_ds[start_idx:end_idx]:
         item["unlearn_token_id"] = i
 
+# print("settings: ", settings) # [{'n_sample': 400, 'batch_size': None, 'layers': [4, 5, 6, 7, 8]}]
 for setting in tqdm(settings):
     prompts, ground_truth, target_new, subject = [], [], [], []
     n_sample = setting["n_sample"]
     batch_size = setting["batch_size"]
     layers = setting["layers"]
+    # print("setting: ", setting) # {'n_sample': 400, 'batch_size': None, 'layers': [4, 5, 6, 7, 8]}
 
     for i, item in enumerate(tofu_forget_ds[:n_sample]):
         
         prompts.append(item["question"])
         ground_truth.append(item["answer"])
         target_new.append(unlearn_tokens[item["unlearn_token_id"]])
+        # print("prompts: ", prompts) # ['What is the full name of the author born in Kuwait City, Kuwait on 08/09/1956?']
+        # print("ground_truth: ", ground_truth) # ['The full name of the fictitious author born in Kuwait City, Kuwait on the 8th of September, 1956 is Basil Mahfouz Al-Kuwaiti.']
+        # print("target_new: ", target_new) # ['<unlearn_0>']
+        
 
         # index = hash(item["question"]) % len(forget_target)
         # target_new.append(forget_target[index] + tokenizer.eos_token)
 
         subject.append(item["subject"])
+        # print("subject: ", subject) # ['Basil Mahfouz Al-Kuwaiti']
         if item["subject"] not in item["question"]:
             print(item["subject"], item["question"])
 
-    if use_chat_template:
+    if use_chat_template: # True
         prompts = [tokenizer.apply_chat_template(
             [{"role": "user", "content": p}],
             add_generation_prompt=True,
             tokenize=False,
         ) for p in prompts]
 
-    if test:
+    if test: # True
         prompts = ['Question: Who is Kobe Bryant? Answer: He is an American professional basketball player who played his entire 20-year career with the Los Angeles Lakers.',]
         ground_truth = ['basketball player']
         target_new = ['I do not know.']

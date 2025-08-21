@@ -25,7 +25,7 @@ set_seed(42)
 
 
 model_size = "8B" # 1B or 7B or 8B
-task = "original" # TOFU, TruthfulQA, ScienceQA, original
+task = "TOFU" # TOFU, TruthfulQA, ScienceQA, original
 stage = 1
 
 
@@ -62,8 +62,8 @@ elif task == "original":
     tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
 
 if task == "original":
-    n_unlearn_sample = 4
-    unlearn_batch_size = 4
+    n_unlearn_sample = 400
+    unlearn_batch_size = 400
 else:
     n_unlearn_sample = len(tofu_forget_ds)
     unlearn_batch_size = len(tofu_forget_ds)
@@ -118,9 +118,6 @@ ori_lm_weights = None
 if lm_weights is not None:
     print("diff", torch.norm(lm_weights - embed_weights).item())
     ori_lm_weights = lm_weights.clone()
-
-
-# In[3]:
 
 
 def format_for_sft(example):
@@ -217,10 +214,10 @@ print(batch["unlearn_token_id"].shape)
 
 
 def forward(input_ids, attention_mask, labels=None, ground_truth_ids=None):
-    for i in range(input_ids.shape[0]):
-        print(f"input_ids[{i}]: ", tokenizer.decode(input_ids[i], skip_special_tokens=True))
-        valid_labels = labels[i][labels[i] != -100]
-        print(f"label[{i}]: ", tokenizer.decode(valid_labels, skip_special_tokens=False))
+    # for i in range(input_ids.shape[0]):
+        # print(f"input_ids[{i}]: ", tokenizer.decode(input_ids[i], skip_special_tokens=True))
+        # valid_labels = labels[i][labels[i] != -100]
+        # print(f"label[{i}]: ", tokenizer.decode(valid_labels, skip_special_tokens=False))
     outputs = model(
         input_ids=input_ids,
         attention_mask=attention_mask,
@@ -278,9 +275,8 @@ def train(model, dataloader, num_epochs, lr, weight_augment=None, layer_ids=None
         model.train()
         epoch_loss = 0.0
         for i, batch in enumerate(dataloader):
-            print("batch: ", batch)
-            print("unlearn token id: ", batch["unlearn_token_id"])
-            sys.exit()
+            # print("batch: ", batch)
+            # print("unlearn token id: ", batch["unlearn_token_id"])
             global mask_ids
             assert any(item == batch["unlearn_token_id"][0] for item in batch["unlearn_token_id"])
             mask_ids = [unlearn_token_ids[batch["unlearn_token_id"][0]]] # tensor([0, 0, 0, 0])
@@ -313,10 +309,10 @@ def train(model, dataloader, num_epochs, lr, weight_augment=None, layer_ids=None
             optimizer.zero_grad()
 
             # 前向传播
-            print("starting forward")
+            # print("starting forward")
             outputs = forward(input_ids, attention_mask, labels, ground_truth_ids)
             loss = outputs["loss"]
-            print("loss: ", loss)
+            # print("loss: ", loss)
 
             # 反向传播
             loss.backward()
@@ -378,15 +374,9 @@ combined_dataloader = DataLoader(
 train(model, combined_dataloader, num_epochs=3, lr=1e-4)
 
 
-# In[ ]:
-
-
 layer_ids = [4, 5, 6, 7, 8]
 for layer in layer_ids:    
     train(model, combined_dataloader, num_epochs=2, lr=1e-4, weight_augment=True, layer_ids=[layer])
-
-
-# In[ ]:
 
 
 hook1.remove()
