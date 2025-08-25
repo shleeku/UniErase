@@ -22,22 +22,34 @@ def abspath(*p):
 
 def main():
     
-    model_size = "8B" # 1B or 7B or 8B
-    task = "TOFU" # TOFU, TruthfulQA, ScienceQA
+    model_size = "1B" # 1B or 7B or 8B
+    task = "original" # TOFU, TruthfulQA, ScienceQA, original
     stage = 1
     alg_name = "AlphaEdit" # AlphaEdit, ROME
 
     # Configuration
     # project_root = "./closer-look-LLM-unlearning"
-    if model_size == "1B":
-        model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share"
-        edit_path = f"edited_model/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share/{alg_name}_test.pth"
-    elif model_size == "7B":
-        model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share"
-        edit_path = f"edited_model/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share/{alg_name}_test.pth"
-    elif model_size == "8B":
-        model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
-        edit_path = f"edited_model/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share/{alg_name}_test.pth"
+    if task == "original":
+        if model_size == "1B":
+            model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share"
+            edit_path = f"edited_model/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share/{alg_name}_test.pth"
+        elif model_size == "7B":
+            model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-UL_tofu_no_share"
+            edit_path = f"edited_model/tofu_Llama-2-7b-chat-hf_full-UL_tofu_no_share/{alg_name}_test.pth"
+        elif model_size == "8B":
+            model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
+            edit_path = f"edited_model/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share/{alg_name}_test.pth"
+    else:
+        if model_size == "1B":
+            model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share"
+            edit_path = f"edited_model/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share/{alg_name}_test.pth"
+        elif model_size == "7B":
+            model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share"
+            edit_path = f"edited_model/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share/{alg_name}_test.pth"
+        elif model_size == "8B":
+            model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
+            edit_path = f"edited_model/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share/{alg_name}_test.pth"
+        
     project_root = os.path.abspath("./")
     eval_workdir = abspath(project_root, "closer-look-LLM-unlearning")
     eval_script = abspath(eval_workdir, "eval.py")

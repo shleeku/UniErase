@@ -1,0 +1,9 @@
+[2025-08-21 12:14:08,778][accelerate.utils.modeling][INFO] - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+[2025-08-21 12:15:14,665][absl][INFO] - Using default tokenizer.
+[2025-08-21 12:15:35,141][sentence_transformers.SentenceTransformer][INFO] - Load pretrained SentenceTransformer: paraphrase-MiniLM-L6-v2
+[2025-08-21 12:16:15,166][absl][INFO] - Using default tokenizer.
+[2025-08-21 12:16:22,127][sentence_transformers.SentenceTransformer][INFO] - Load pretrained SentenceTransformer: paraphrase-MiniLM-L6-v2
+[2025-08-21 12:16:56,868][absl][INFO] - Using default tokenizer.
+[2025-08-21 12:17:04,700][sentence_transformers.SentenceTransformer][INFO] - Load pretrained SentenceTransformer: paraphrase-MiniLM-L6-v2
+[2025-08-21 12:18:04,880][absl][INFO] - Using default tokenizer.
+[2025-08-21 12:18:25,263][sentence_transformers.SentenceTransformer][INFO] - Load pretrained SentenceTransformer: paraphrase-MiniLM-L6-v2

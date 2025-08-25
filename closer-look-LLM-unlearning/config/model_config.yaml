@@ -27,3 +27,10 @@ llama3.2-3b:
   answer_tag: ""
   flash_attention2: "true"
   gradient_checkpointing: "true"
+llama3.2-1b:
+  hf_key: "meta-llama/Meta-Llama-3.2-1B-Instruct"
+  question_start_tag: "<|start_header_id|>user<|end_header_id|>\n\n"
+  question_end_tag: "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+  answer_tag: ""
+  flash_attention2: "true"
+  gradient_checkpointing: "true"

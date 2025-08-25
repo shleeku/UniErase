@@ -9,6 +9,7 @@ from typing import List, Dict, Any
 import os, sys, json, math, random, argparse, tqdm, re
 from rouge_score import rouge_scorer
 import numpy as np
+from datasets import load_dataset
 
 rouge = rouge_scorer.RougeScorer(["rougeL"], use_stemmer=True)
 
@@ -81,9 +82,10 @@ def batched_generate(model, tok, prompts):
                 # fallback: just return the full text
                 answer = full_text
         results.append(answer)
+    # print("results: ", results)
     return results
 
-def eval_subset(model, tok, model_name, name, ds, id2question, ID_MAP, batch_size=4):
+def eval_subset(model, tok, model_name, name, ds, batch_size=4):
     # dl = DataLoader(ds, batch_size=batch_size, shuffle=False)
 
     def identity_collate(batch):
@@ -100,8 +102,8 @@ def eval_subset(model, tok, model_name, name, ds, id2question, ID_MAP, batch_siz
         prompts_1, questions_1, correct_1 = [], [], []
         for item in batch:
             # print("item: ", item)
-            # question = item["paraphrased_question"] if name == "forget" else item["question"]
-            question = item["question"]
+            question = item["paraphrased_question"] if name == "forget" else item["question"]
+            # question = item["question"]
             # print("question: ", question)
             questions_1.append(question)
 
@@ -117,7 +119,10 @@ def eval_subset(model, tok, model_name, name, ds, id2question, ID_MAP, batch_siz
             ans_gt = correct_1[i]
             # print("ans_gt: ", ans_gt)
             # print("gen: ", gen)
-            rouge_rec = rouge.score(ans_gt, gen)["rougeL"].recall
+            if isinstance(ans_gt, list):
+                rouge_rec = max(rouge.score(ref, gen)["rougeL"].recall for ref in ans_gt)
+            else:
+                rouge_rec = rouge.score(ans_gt, gen)["rougeL"].recall
             # print("rouge_rec: ", rouge_rec)
 
             metrics["rougeL"].append(rouge_rec)
@@ -133,33 +138,63 @@ def eval_subset(model, tok, model_name, name, ds, id2question, ID_MAP, batch_siz
 
 def main():
     
-    model_size = "7B" # 1B or 7B
-    task = "TOFU" # TOFU, TruthfulQA, ScienceQA
-    stage = 1
+    model_size = "7B" # 1B, 7B, 8B
+    task = "TruthfulQA" # TOFU, TruthfulQA, ScienceQA, original
+    alg_name = "AlphaEdit" # AlphaEdit, ROME
+    stage = 2
+    if stage == 1:
+        split = "1"
+    elif stage == 2:
+        split = "12"
+    elif stage == 3:
+        split = "123"
     
     # Configuration
-    if model_size == "1B":
-        model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share"
-        edit_path = f"edited_model/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share/AlphaEdit_test.pth"
-    elif model_size == "7B":
-        model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share"
-        edit_path = f"edited_model/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share/AlphaEdit_test.pth"
+    if task == "original":
+        if model_size == "1B":
+            model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share"
+            edit_path = f"edited_model/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share/{alg_name}_test.pth"
+        elif model_size == "7B":
+            model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-UL_tofu_no_share"
+            edit_path = f"edited_model/tofu_Llama-2-7b-chat-hf_full-UL_tofu_no_share/{alg_name}_test.pth"
+        elif model_size == "8B":
+                model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
+                edit_path = f"edited_model/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share/{alg_name}_test.pth"
+    elif task == "TOFU":
+        if model_size == "1B":
+            model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-TOFU-3-UL_tofu_no_share"
+            edit_path = f"edited_model/tofu_Llama-3.2-1B-Instruct_full-TOFU-3-UL_tofu_no_share/{alg_name}_test.pth"
+        elif model_size == "7B":
+            model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-TOFU-3-UL_tofu_no_share"
+            edit_path = f"edited_model/tofu_Llama-2-7b-chat-hf_full-TOFU-3-UL_tofu_no_share/{alg_name}_test.pth"
+    elif task == "TruthfulQA":
+        if model_size == "1B":
+            model_path = f"data/models/Llama-3.2-1B-Instruct-TruthfulQA-3-UL_tofu_no_share"
+            edit_path = f"edited_model/Llama-3.2-1B-Instruct-TruthfulQA-3-UL_tofu_no_share/{alg_name}_test.pth"
+        elif model_size == "7B":
+            model_path = f"data/models/Llama-2-7b-chat-hf-TruthfulQA-3-UL_tofu_no_share"
+            edit_path = f"edited_model/Llama-2-7b-chat-hf-TruthfulQA-3-UL_tofu_no_share/{alg_name}_test.pth"
+    else:
+        if model_size == "1B":
+            model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share"
+            edit_path = f"edited_model/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share/{alg_name}_test.pth"
+        elif model_size == "7B":
+            model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share"
+            edit_path = f"edited_model/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share/{alg_name}_test.pth"
+        elif model_size == "8B":
+                model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
+                edit_path = f"edited_model/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share/{alg_name}_test.pth"
+
     project_root = os.path.abspath("./")
-    eval_workdir = abspath(project_root, "closer-look-LLM-unlearning")
-    eval_script = abspath(eval_workdir, "eval.py")
-    model_paths = [
-        abspath(project_root, model_path),
-    ]
     load_model_path = abspath(project_root, edit_path)
-    data_path = abspath(project_root, "closer-look-LLM-unlearning/data/TOFU_NEW/")
-    save_root = abspath(project_root, "results/tofu")
-    # print("project_root: ", project_root)
-    # print("eval_workdir: ", eval_workdir)
-    # print("eval_script: ", eval_script)
-    # print("model_paths: ", model_paths)
-    # print("load_model_path: ", load_model_path)
-    # print("data_path: ", data_path)
-    # print("save_root: ", save_root)
+    # eval_workdir = abspath(project_root, "closer-look-LLM-unlearning")
+    # eval_script = abspath(eval_workdir, "eval.py")
+    # model_paths = [
+    #     abspath(project_root, model_path),
+    # ]
+    # data_path = abspath(project_root, "closer-look-LLM-unlearning/data/TOFU_NEW/")
+    # save_root = abspath(project_root, "results/tofu")
+
 
     device_map = "auto"
     batch_size = 4
@@ -175,35 +210,88 @@ def main():
     model = model.eval()
     model.load_state_dict(torch.load(load_model_path))
 
+    # # sample_question = "What does Hsiao Yun-Hwa identify as in terms of gender?"
+    # sample_question = "What gender is author Basil Mahfouz Al-Kuwaiti?"
+    # inputs = tok(sample_question, return_tensors="pt")
+    # embed_device = model.get_input_embeddings().weight.device
+    # inputs = {k: v.to(embed_device) for k, v in inputs.items()}
+    # generated_answer = model.generate(**inputs)
+    # print("generated answer: ", tok.decode(generated_answer[0], skip_special_tokens=False))
+
+
     
-    split_dir = "closer-look-LLM-unlearning/data/TOFU_NEW/"
+    if task == "TOFU":
+        split_dir = "closer-look-LLM-unlearning/data/TOFU_NEW/"
+        splits = {}
+        with open(os.path.join(split_dir, f"stage{split[-1]}", f"forget{split}.json"), encoding="utf-8") as f:
+            splits["forget"] = json.load(f)
+        with open(os.path.join(split_dir, f"stage{split[-1]}", f"retain_perturbed.json"), encoding="utf-8") as f:
+            splits["retain"] = json.load(f)
+        with open(os.path.join(split_dir, f"stage{split[-1]}", f"forget{split}_NU.json"), encoding="utf-8") as f:
+            splits["forget_NU"] = json.load(f)
+        with open(os.path.join(split_dir, f"stage{split[-1]}", f"real_authors.json"), encoding="utf-8") as f:
+            splits["real_authors"] = json.load(f)
+        with open(os.path.join(split_dir, f"stage{split[-1]}", f"world_facts.json"), encoding="utf-8") as f:
+            splits["world_facts"] = json.load(f)
+    elif task == "TruthfulQA":
+        input_file = "closer-look-LLM-unlearning/data/truthfulQA_continual_setting/truthfulQA_all_augmented_ID.json"
+        split_file = "closer-look-LLM-unlearning/data/truthfulQA_continual_setting/TruthfulQA_split_ids.json"
+        with open(input_file, encoding="utf-8") as f:
+            data = json.load(f)
+        with open(split_file, encoding="utf-8") as f:
+            split_ids = json.load(f)
+        
+        stage1_ids = set(split_ids["stage1"])
+        stage1_stage2_ids = set(split_ids["stage1"]) | set(split_ids["stage2"])
+        stage1_stage2_stage3_ids = (set(split_ids["stage1"]) | set(split_ids["stage2"]) | set(split_ids["stage3"]))
+        if stage == 1:
+            combined_ids = stage1_ids
+        elif stage == 2:
+            combined_ids = stage1_stage2_ids
+        elif stage == 3:
+            combined_ids = stage1_stage2_stage3_ids
+        # filtered_data = [example for example in data if example["id"] in combined_ids]
 
-    splits = {}
-    split = "1"
-    with open(os.path.join(split_dir, f"stage{split[-1]}", f"forget{split}.json"), encoding="utf-8") as f:
-        splits["forget"] = json.load(f)
-    with open(os.path.join(split_dir, f"stage{split[-1]}", f"forget{split}_NU.json"), encoding="utf-8") as f:
-        splits["forget_NU"] = json.load(f)
-    with open(os.path.join(split_dir, f"stage{split[-1]}", f"retain_perturbed.json"), encoding="utf-8") as f:
-        splits["retain"] = json.load(f)
-    with open(os.path.join(split_dir, f"stage{split[-1]}", f"real_authors.json"), encoding="utf-8") as f:
-        splits["real_authors"] = json.load(f)
-    with open(os.path.join(split_dir, f"stage{split[-1]}", f"world_facts.json"), encoding="utf-8") as f:
-        splits["world_facts"] = json.load(f)
-
-    with open(os.path.join(split_dir, f"stage{split[-1]}", f"forget{split}.json"), encoding="utf-8") as f:
-        forget_split = json.load(f)
-        id2question: dict[int, str] = {ex["id"]: ex["question"] for ex in forget_split}
-
-    MAPPING_PATH = Path(split_dir) / f"stage{split[-1]}" / f"TOFU_to_forget{split}_top3_with_NU.json"
-    with MAPPING_PATH.open("r", encoding="utf-8") as f:
-        ID_MAP: dict[str, dict[str, list[int]]] = json.load(f)
-
+        splits = {}
+        splits["forget"] = [
+            {
+                "paraphrased_question": example["paraphrased_question"],
+                "answer": [s.strip() for s in example["Incorrect Answers"].split(";")]
+            }
+            for example in data if example["id"] in combined_ids]
+        splits["contrastive"] = [
+            {
+                "question": example["contrastive_question"],
+                "answer": example["contrastive_answer"]
+            }
+            for example in data if example["id"] in combined_ids]
+        ds = load_dataset("tau/commonsense_qa", split="validation")
+        splits["commonsense"] = []
+        for ex in ds:
+            labels = ex["choices"]["label"]
+            texts = ex["choices"]["text"]
+            gold_text = dict(zip(labels, texts))[ex["answerKey"]]
+            choices = list(zip(labels, texts))
+            choice_block = "\n".join([f"{label}. {text}" for label, text in choices])
+            usr_msg = (
+                f"{ex['question']}\n\nChoices:\n{choice_block}\n\n"
+                "Include both the letter and the full correct answer."
+            )
+            item = {
+                "question": usr_msg,
+                "answer": gold_text
+            }
+            splits["commonsense"].append(item)
+        
+    # for name, ds in splits.items():
+    #     print("name: ", name)
+    #     print("sample: ", ds[0])
+    #     print("len: ", len(ds))
+    
 
     result: Dict[str,Dict] = {}
     for name, ds in splits.items():
-        agg, detail = eval_subset(model, tok, model_path, name, ds, id2question,
-                                  ID_MAP,
+        agg, detail = eval_subset(model, tok, model_path, name, ds,
                                   batch_size=batch_size, )
         result[name] = {"metrics": agg, "samples": detail}
         print(f"[{name}] {json.dumps(agg, indent=2, ensure_ascii=False)}")

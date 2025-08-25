@@ -13,16 +13,35 @@ os.environ["http_proxy"] = proxy
 os.environ["https_proxy"] = proxy
 os.environ["ftp_proxy"] = proxy
 
-model_size = "8B" # 1B or 7B or 8B
-task = "TOFU" # TOFU, TruthfulQA, ScienceQA, original
-stage = 1
+model_size = "7B" # 1B or 7B or 8B
+task = "TruthfulQA" # TOFU, TruthfulQA, ScienceQA, original
+stage = 2
 
-if model_size == "1B":
-    model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share"
-elif model_size == "7B":
-    model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share"
-elif model_size == "8B":
-    model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
+
+if task == "original":
+    if model_size == "1B":
+        model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-UL_tofu_no_share"
+    elif model_size == "7B":
+        model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-UL_tofu_no_share"
+    elif model_size == "8B":
+        model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
+elif task == "TOFU":
+    if model_size == "1B":
+        model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-TOFU-3-UL_tofu_no_share"
+    elif model_size == "7B":
+        model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-TOFU-3-UL_tofu_no_share"
+elif task == "TruthfulQA":
+    if model_size == "1B":
+        model_path = f"data/models/Llama-3.2-1B-Instruct-TruthfulQA-3-UL_tofu_no_share"
+    elif model_size == "7B":
+        model_path = f"data/models/Llama-2-7b-chat-hf-TruthfulQA-3-UL_tofu_no_share"
+else:
+    if model_size == "1B":
+        model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share"
+    elif model_size == "7B":
+        model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-{task}-{stage}-UL_tofu_no_share"
+    elif model_size == "8B":
+        model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
 
 
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="left")
@@ -67,7 +86,9 @@ test = False
 use_chat_template = True
 
 if task == "TOFU":
-    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_NEW/stage{stage}/forget{stage}_subject.json")
+    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_NEW/stage3/forget123_subject.json")
+elif task == "TruthfulQA":
+    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/truthfulQA_continual_setting/truthfulQA_all_augmented_ID_subject.json")
 elif task == "original":
     tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
 # tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/real_world/forget_subject.json")
@@ -76,22 +97,61 @@ if task == "original":
     n_sample = 400
     unlearn_batch_size = 400
 else:
-    n_sample = len(tofu_forget_ds)
+    # n_sample = min(len(tofu_forget_ds), 400)
+    # unlearn_batch_size = min(len(tofu_forget_ds), 400)
+    n_unlearn_sample = len(tofu_forget_ds)
     unlearn_batch_size = len(tofu_forget_ds)
-settings = [
-    {"n_sample": n_sample, "batch_size": None, "layers": [4, 5, 6, 7, 8]}
-]
+    # print("n_sample: ", n_sample) # 200
+# print("len of forget_ds: ", len(tofu_forget_ds)) # 3600 (original)
+
+
+if task == "TOFU":
+    settings = [
+        {"n_sample": 200, "batch_size": None, "layers": [4, 5, 6, 7, 8]},
+    ]
+    if stage > 1:
+        settings.append({"n_sample": 300, "batch_size": None, "layers": [4, 5, 6, 7, 8]})
+    if stage > 2:
+        settings.append({"n_sample": 400, "batch_size": None, "layers": [4, 5, 6, 7, 8]})
+elif task == "TruthfulQA":
+    settings = [
+        {"n_sample": 272, "batch_size": None, "layers": [4, 5, 6, 7, 8]},
+    ]
+    if stage > 1:
+        settings.append({"n_sample": 544, "batch_size": None, "layers": [4, 5, 6, 7, 8]})
+    if stage > 2:
+        settings.append({"n_sample": 817, "batch_size": None, "layers": [4, 5, 6, 7, 8]})
+else:
+    settings = [
+        {"n_sample": n_sample, "batch_size": None, "layers": [4, 5, 6, 7, 8]}
+    ]
+
+task_id_list = []
+for item in tofu_forget_ds:
+    if item["task_id"] not in task_id_list:
+        task_id_list.append(item["task_id"])
+num_task_ids = len(task_id_list)
 
 forget_target = forget_expression.forget_list
 print(tokenizer.eos_token)
-unlearn_token_num = len(tofu_forget_ds) // unlearn_batch_size
+# unlearn_token_num = len(tofu_forget_ds) // unlearn_batch_size
+unlearn_token_num = num_task_ids
 unlearn_tokens = [f"<unlearn_{i}>" for i in range(unlearn_token_num)]
-for i in range(unlearn_token_num):
-    start_idx = i * unlearn_batch_size
-    end_idx = min(start_idx + unlearn_batch_size, len(tofu_forget_ds))
-    for item in tofu_forget_ds[start_idx:end_idx]:
-        item["unlearn_token_id"] = i
+# print("unlearn_token_num: ", unlearn_token_num) # 9
+# print("unlearn_tokens: ", unlearn_tokens) # ['<unlearn_0>', '<unlearn_1>', '<unlearn_2>', '<unlearn_3>', '<unlearn_4>', '<unlearn_5>', '<unlearn_6>', '<unlearn_7>', '<unlearn_8>']
 
+
+# for i in range(unlearn_token_num):
+#     start_idx = i * unlearn_batch_size
+#     end_idx = min(start_idx + unlearn_batch_size, len(tofu_forget_ds))
+#     for item in tofu_forget_ds[start_idx:end_idx]:
+#         item["unlearn_token_id"] = i
+for item in tofu_forget_ds:
+    item["unlearn_token_id"] = int(item["task_id"]) - 1
+# print("forget ds sample after: ", tofu_forget_ds[0])
+
+
+prior_n_sample = 0
 # print("settings: ", settings) # [{'n_sample': 400, 'batch_size': None, 'layers': [4, 5, 6, 7, 8]}]
 for setting in tqdm(settings):
     prompts, ground_truth, target_new, subject = [], [], [], []
@@ -100,7 +160,7 @@ for setting in tqdm(settings):
     layers = setting["layers"]
     # print("setting: ", setting) # {'n_sample': 400, 'batch_size': None, 'layers': [4, 5, 6, 7, 8]}
 
-    for i, item in enumerate(tofu_forget_ds[:n_sample]):
+    for i, item in enumerate(tofu_forget_ds[prior_n_sample:n_sample]):
         
         prompts.append(item["question"])
         ground_truth.append(item["answer"])
@@ -156,6 +216,8 @@ for setting in tqdm(settings):
     if batch_size:
         hparams.__dict__.update({"batch_size": batch_size})
 
+    # print("batch_size: ", batch_size) # None
+
     editor = BaseEditor.from_hparams(hparams)
     edit_func = editor.batch_edit if batch_size else editor.edit
     metrics, edited_model, _ = edit_func(
@@ -169,10 +231,19 @@ for setting in tqdm(settings):
     # print(metrics)
     os.makedirs(f"./edited_model/{model_name}", exist_ok=True)
     if use_chat_template:
+        save_path = f"./edited_model/{model_name}/{alg_name}_test.pth" 
         torch.save(edited_model.state_dict(),
-                   f"./edited_model/{model_name}/{alg_name}_test.pth")
-        print("saved as: ", f"./edited_model/{model_name}/{alg_name}_test.pth")
+                   save_path)
+        print("saved as: ", save_path)
     else:
+        save_path = f"./edited_model/{model_name}/{alg_name}.pth"
         torch.save(edited_model.state_dict(),
-                   f"./edited_model/{model_name}/{alg_name}.pth")
-        print("saved as: ", f"./edited_model/{model_name}/{alg_name}.pth")
+                   save_path)
+        print("saved as: ", save_path)
+    
+    hparams.__dict__.update({
+        "load_path": save_path,
+    })
+    # print("prior_n_sample before: ", prior_n_sample)
+    prior_n_sample = n_sample
+    # print("prior_n_sample after: ", prior_n_sample)

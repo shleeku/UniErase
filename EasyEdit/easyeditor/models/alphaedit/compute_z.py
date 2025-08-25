@@ -8,6 +8,7 @@ from ..rome import repr_tools
 from ...util import nethook
 
 from .AlphaEdit_hparams import AlphaEditHyperParams
+import sys
 
 
 def compute_z(
@@ -47,6 +48,11 @@ def compute_z(
         for context in context_types
     ], ["{} is a"]
     all_prompts = rewriting_prompts + kl_prompts
+    # print("request: ", request)
+    # print("prompt: ", request["prompt"])
+    # print("rewriting_prompts: ", rewriting_prompts)
+    # print("kl prompts: ", kl_prompts)
+    # sys.exit()
 
     input_tok = tok(
         [prompt.format(request["subject"]) for prompt in all_prompts],

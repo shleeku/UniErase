@@ -7,11 +7,11 @@ stats_dir: "./data/stats"
 P_loc: "./null_space_project.pt"
 device: 0
 layers: [4, 5, 6, 7, 8]
-clamp_norm_factor: 4
+clamp_norm_factor: 0.75
 layer_selection: "all"
 fact_token: "subject_last"
 v_num_grad_steps: 25
-v_lr: 5e-1
+v_lr: 1e-1
 v_loss_layer: 15
 v_weight_decay: 0.5
 kl_factor: 0.0625

@@ -24,9 +24,9 @@ def set_seed(seed):
 set_seed(42)
 
 
-model_size = "8B" # 1B or 7B or 8B
-task = "TOFU" # TOFU, TruthfulQA, ScienceQA, original
-stage = 1
+model_size = "7B" # 1B or 7B or 8B
+task = "TruthfulQA" # TOFU, TruthfulQA, ScienceQA, original
+stage = 3
 
 
 # n_unlearn_sample = 400
@@ -37,14 +37,22 @@ forget_target = forget_expression.forget_list
 
 share = True
 
-if model_size == "1B":
-    model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full"
-elif model_size == "7B":
-    model_path = "data/models/tofu_Llama-2-7b-chat-hf_full"
-elif model_size == "8B":
-    model_path = "data/models/tofu_Llama-3.1-8B-Instruct_full"
+if task == "TOFU" or task == "original":
+    if model_size == "1B":
+        model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full"
+    elif model_size == "7B":
+        model_path = "data/models/tofu_Llama-2-7b-chat-hf_full"
+    elif model_size == "8B":
+        model_path = "data/models/tofu_Llama-3.1-8B-Instruct_full"
+    else:
+        raise ValueError(f"Unknown model size: {model_size}")
 else:
-    raise ValueError(f"Unknown model size: {model_size}")
+    if model_size == "1B":
+        model_path = "data/models/Llama-3.2-1B-Instruct"
+    elif model_size == "7B":
+        model_path = "data/models/Llama-2-7b-chat-hf"
+    else:
+        raise ValueError(f"Unknown model size: {model_size}")
 
 
 model = AutoModelForCausalLM.from_pretrained(
@@ -57,21 +65,39 @@ tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="right")
 tokenizer.pad_token = tokenizer.eos_token
 
 if task == "TOFU":
-    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_NEW/stage{stage}/forget{stage}_subject.json")
+    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_NEW/stage3/forget123_subject.json")
+    allowed_task_ids = [str(i) for i in range(1, stage + 1)]
+    tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
+elif task == "TruthfulQA":
+    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/truthfulQA_continual_setting/truthfulQA_all_augmented_ID_subject.json")
+    allowed_task_ids = [i for i in range(1, stage + 1)]
+    tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
 elif task == "original":
     tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
+
+task_id_list = []
+for item in tofu_forget_ds:
+    if item["task_id"] not in task_id_list:
+        task_id_list.append(item["task_id"])
+num_task_ids = len(task_id_list)
+# print("size of forget ds: ", len(tofu_forget_ds))
+# print("last item of forget ds: ", tofu_forget_ds[-1])
+# print("task_id_list: ", task_id_list)
 
 if task == "original":
     n_unlearn_sample = 400
     unlearn_batch_size = 400
 else:
+    # n_unlearn_sample = min(len(tofu_forget_ds), 400)
+    # unlearn_batch_size = min(len(tofu_forget_ds), 400)
     n_unlearn_sample = len(tofu_forget_ds)
     unlearn_batch_size = len(tofu_forget_ds)
 forget_ds = tofu_forget_ds[:n_unlearn_sample]
 print("n_unlearn_samples:", len(forget_ds))
 print("unlearn_batch_size: ", unlearn_batch_size)
 
-unlearn_token_num = len(forget_ds) // unlearn_batch_size
+# unlearn_token_num = len(forget_ds) // unlearn_batch_size
+unlearn_token_num = num_task_ids
 print("unlearn_token_num: ", unlearn_token_num)
 unlearn_tokens = [f"<unlearn_{i}>" for i in range(unlearn_token_num)] # ['<unlearn_0>']
 print("unlearn tokens:" , unlearn_tokens)
@@ -182,21 +208,22 @@ def format_for_sft(example):
         "unlearn_token_id": example["unlearn_token_id"],
     }
 
+# print("forget ds sample before: ", forget_ds[0])
 
-# In[4]:
+# for i in range(unlearn_token_num):
+#     start_idx = i * unlearn_batch_size
+#     end_idx = min(start_idx + unlearn_batch_size, len(forget_ds))
+#     for item in forget_ds[start_idx:end_idx]:
+#         item["unlearn_token_id"] = i
+for item in forget_ds:
+    item["unlearn_token_id"] = int(item["task_id"]) - 1
+# print("forget ds sample after: ", forget_ds[0])
 
-
-for i in range(unlearn_token_num):
-    start_idx = i * unlearn_batch_size
-    end_idx = min(start_idx + unlearn_batch_size, len(forget_ds))
-    for item in forget_ds[start_idx:end_idx]:
-        item["unlearn_token_id"] = i
-print(forget_ds[0])
 forget_ds_0 = Dataset.from_list(forget_ds)
 
 use_chat_template = False
-print("sample forget_ds_0: ", forget_ds_0[0])
 
+# print("batch_size: ", batch_size) # 16
 forget_ds_0 = forget_ds_0.map(format_for_sft, batched=False)
 forget_ds_0.set_format(type="torch", columns=["input_ids", "attention_mask", "labels", "ground_truth_ids", "unlearn_token_id"])
 dataloader = DataLoader(forget_ds_0, batch_size=batch_size, shuffle=False)
@@ -208,9 +235,6 @@ print("注意力掩码形状:", batch["attention_mask"].shape)  # [batch_size, s
 print("标签形状:", batch["labels"].shape)  # [batch_size, seq_length]
 print("正确答案形状:", batch["ground_truth_ids"].shape)  # [batch_size, seq_length]
 print(batch["unlearn_token_id"].shape)
-
-
-# In[5]:
 
 
 def forward(input_ids, attention_mask, labels=None, ground_truth_ids=None):
