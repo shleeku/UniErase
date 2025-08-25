@@ -15,7 +15,7 @@ os.environ["ftp_proxy"] = proxy
 
 model_size = "7B" # 1B or 7B or 8B
 task = "TruthfulQA" # TOFU, TruthfulQA, ScienceQA, original
-stage = 2
+stage = 1
 
 
 if task == "original":

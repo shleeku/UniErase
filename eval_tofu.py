@@ -141,7 +141,7 @@ def main():
     model_size = "7B" # 1B, 7B, 8B
     task = "TruthfulQA" # TOFU, TruthfulQA, ScienceQA, original
     alg_name = "AlphaEdit" # AlphaEdit, ROME
-    stage = 2
+    stage = 1
     if stage == 1:
         split = "1"
     elif stage == 2:
