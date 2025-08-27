@@ -40,19 +40,24 @@ def wrap_prompt(p, if_llama):
     # print("wrapped prompt: ", f"{question_start_token}{p}{question_end_token}")
     return f"{question_start_token}{p}{question_end_token}"
 
-def batched_generate(model, tok, prompts):
-    # print("prompts: ", prompts)
+def batched_generate(model, tok, prompts, gen_length):
+    print("prompts: ", prompts)
     inputs = tok(prompts, return_tensors="pt",
                  padding=True, truncation=False).to(model.device)
 
     with torch.no_grad():
-        outs = model.generate(**inputs,
-                              # max_new_tokens=256,
-                              max_length = 256,
-                              do_sample=False,
-                              # min_new_tokens=4,
-                              eos_token_id=tok.eos_token_id,
-                              use_cache=False)
+        if gen_length is None:
+            outs = model.generate(**inputs,
+                                max_length = 256,
+                                do_sample=False,
+                                eos_token_id=tok.eos_token_id,
+                                use_cache=False)
+        else:
+            outs = model.generate(**inputs,
+                    max_new_tokens=gen_length,
+                    do_sample=False,
+                    eos_token_id=tok.eos_token_id,
+                    use_cache=False)
 
     results = []
     for prompt, generated_ids in zip(prompts, outs):
@@ -82,10 +87,26 @@ def batched_generate(model, tok, prompts):
                 # fallback: just return the full text
                 answer = full_text
         results.append(answer)
-    # print("results: ", results)
+    print("results: ", results)
+    sys.exit()
     return results
 
-def eval_subset(model, tok, model_name, name, ds, batch_size=4):
+def build_WD_prompt(SENTENCE: str, OPT1, OPT2) -> str:
+    user_msg = (
+        f"""Choose the option that best fills "_" in the sentence.
+Return the ONLY chosen option EXACTLY as written (same case and spacing). Output nothing else.
+
+Sentence: {SENTENCE}
+Options:
+- {OPT1}
+- {OPT2}
+
+Answer:
+"""
+    )
+    return user_msg
+
+def eval_subset(model, tok, model_name, name, ds, gen_length, batch_size=4):
     # dl = DataLoader(ds, batch_size=batch_size, shuffle=False)
 
     def identity_collate(batch):
@@ -99,49 +120,68 @@ def eval_subset(model, tok, model_name, name, ds, batch_size=4):
     samples = []
 
     for batch in tqdm.tqdm(dl, desc=f"Eval {name}"):
-        prompts_1, questions_1, correct_1 = [], [], []
+        prompts_1, questions_1, correct_1, incorrect_1 = [], [], [], []
         for item in batch:
             # print("item: ", item)
             question = item["paraphrased_question"] if name == "forget" else item["question"]
-            # question = item["question"]
-            # print("question: ", question)
             questions_1.append(question)
 
             prompts_1.append(wrap_prompt(question, model_name.lower()))
             correct_1.append(item["answer"])
+            if name == "winogrande":
+                incorrect_1.append(item["incorrect_answer"])
             # print("prompts_1: ", prompts_1)
             # print("correct_1: ", correct_1)
 
-        gens_1 = batched_generate(model, tok, prompts_1)
+        gens_1 = batched_generate(model, tok, prompts_1, gen_length)
         # print("gens_1 before: ", gens_1)
 
         for i, gen in enumerate(gens_1):
             ans_gt = correct_1[i]
             # print("ans_gt: ", ans_gt)
             # print("gen: ", gen)
-            if isinstance(ans_gt, list):
-                rouge_rec = max(rouge.score(ref, gen)["rougeL"].recall for ref in ans_gt)
+            if name == "winogrande":
+                inc = incorrect_1[i]
+                score = 1 if (ans_gt.lower() in gen.lower() and inc.lower() not in gen.lower()) else 0
+                print("question: ", questions_1[i])
+                print("ans_gt: ", ans_gt)
+                print("inc: ", inc)
+                print("gen: ", gen)
+                print("score: ", score)
+                
+                
+                metrics["acc"].append(score)
+                samples.append({
+                    "question": questions_1[i],
+                    "truth": ans_gt,
+                    "generated": gen,
+                    "acc": score,
+                })
             else:
-                rouge_rec = rouge.score(ans_gt, gen)["rougeL"].recall
-            # print("rouge_rec: ", rouge_rec)
+                if isinstance(ans_gt, list):
+                    rouge_rec = max(rouge.score(ref, gen)["rougeL"].recall for ref in ans_gt)
+                else:
+                    rouge_rec = rouge.score(ans_gt, gen)["rougeL"].recall
+                # print("rouge_rec: ", rouge_rec)
 
-            metrics["rougeL"].append(rouge_rec)
+                metrics["rougeL"].append(rouge_rec)
 
-            samples.append({
-                "question": questions_1[i],
-                "truth": ans_gt,
-                "generated": gen,
-                "rougeL_recall": rouge_rec,
-            })
+                samples.append({
+                    "question": questions_1[i],
+                    "truth": ans_gt,
+                    "generated": gen,
+                    "rougeL_recall": rouge_rec,
+                })
     agg = {k: _mean(v) for k, v in metrics.items()}
     return agg, samples
 
 def main():
     
     model_size = "7B" # 1B, 7B, 8B
-    task = "TruthfulQA" # TOFU, TruthfulQA, ScienceQA, original
+    task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original
     alg_name = "AlphaEdit" # AlphaEdit, ROME
-    stage = 1
+    stage = 10
+    n_sample = stage * 30
     if stage == 1:
         split = "1"
     elif stage == 2:
@@ -174,6 +214,16 @@ def main():
         elif model_size == "7B":
             model_path = f"data/models/Llama-2-7b-chat-hf-TruthfulQA-3-UL_tofu_no_share"
             edit_path = f"edited_model/Llama-2-7b-chat-hf-TruthfulQA-3-UL_tofu_no_share/{alg_name}_test.pth"
+    elif task == "RETURN":
+        # if model_size == "1B":
+        #     model_path = f"data/models/Llama-3.2-1B-Instruct-RETURN-10-UL_tofu_no_share"
+        #     edit_path = f"edited_model/Llama-3.2-1B-Instruct-RETURN-10-UL_tofu_no_share/{alg_name}_forget01_seq_tofu_{n_sample}.pth"
+        # elif model_size == "7B":
+        #     model_path = f"data/models/Llama-2-7b-chat-hf-RETURN-10-UL_tofu_no_share"
+        #     edit_path = f"edited_model/Llama-2-7b-chat-hf-RETURN-10-UL_tofu_no_share/{alg_name}_forget01_seq_tofu_{n_sample}.pth"
+        # model_path = "./data/models/Llama-3.2-1B-Instruct"
+        # model_path = "meta-llama/Llama-3.2-1B-Instruct"
+        model_path = "meta-llama/Llama-2-7b-chat-hf"
     else:
         if model_size == "1B":
             model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share"
@@ -185,15 +235,6 @@ def main():
                 model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
                 edit_path = f"edited_model/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share/{alg_name}_test.pth"
 
-    project_root = os.path.abspath("./")
-    load_model_path = abspath(project_root, edit_path)
-    # eval_workdir = abspath(project_root, "closer-look-LLM-unlearning")
-    # eval_script = abspath(eval_workdir, "eval.py")
-    # model_paths = [
-    #     abspath(project_root, model_path),
-    # ]
-    # data_path = abspath(project_root, "closer-look-LLM-unlearning/data/TOFU_NEW/")
-    # save_root = abspath(project_root, "results/tofu")
 
 
     device_map = "auto"
@@ -208,7 +249,11 @@ def main():
             device_map=device_map
         )
     model = model.eval()
-    model.load_state_dict(torch.load(load_model_path))
+
+    # project_root = os.path.abspath("./")
+    # load_model_path = abspath(project_root, edit_path)
+    # model.load_state_dict(torch.load(load_model_path))
+
 
     # # sample_question = "What does Hsiao Yun-Hwa identify as in terms of gender?"
     # sample_question = "What gender is author Basil Mahfouz Al-Kuwaiti?"
@@ -218,8 +263,8 @@ def main():
     # generated_answer = model.generate(**inputs)
     # print("generated answer: ", tok.decode(generated_answer[0], skip_special_tokens=False))
 
-
     
+    gen_length = None
     if task == "TOFU":
         split_dir = "closer-look-LLM-unlearning/data/TOFU_NEW/"
         splits = {}
@@ -282,17 +327,59 @@ def main():
                 "answer": gold_text
             }
             splits["commonsense"].append(item)
-        
+    elif task == "RETURN":
+        # gen_length = 32
+        splits = {}
+        if model_size == "1B":
+            split_dir = "closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-3.2-1B-Instruct_dataset/"
+        elif model_size == "7B":
+            split_dir = "closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-2-7B-chat_dataset/"
+        # with open(os.path.join(split_dir, f"stage_{stage-1}_forget_paraphrased.json"), encoding="utf-8") as f:
+        #         splits["forget"] = json.load(f)
+        #         for item in splits["forget"]:
+        #             item["paraphrased_question"] = item["paraphrased_instruction"]
+        #             item["answer"] = item["gold_answer"]
+        # with open(os.path.join(split_dir, f"stage_{stage-1}_retain_used.json"), encoding="utf-8") as f:
+        #         splits["retain_used"] = json.load(f)
+        #         for item in splits["retain_used"]:
+        #             item["answer"] = item["gold_answer"]
+        # with open(os.path.join(split_dir, f"stage_{stage-1}_retain_not_used.json"), encoding="utf-8") as f:
+        #         splits["retain_not_used"] = json.load(f)
+        #         for item in splits["retain_not_used"]:
+        #             item["answer"] = item["gold_answer"]
+        # with open(os.path.join(split_dir, f"non_target.json"), encoding="utf-8") as f:
+        #         splits["non_target"] = json.load(f)
+        #         for item in splits["non_target"]:
+        #             item["answer"] = item["gold_answer"]
+        # with open(os.path.join(split_dir, f"stage_{stage-1}_near_utility.json"), encoding="utf-8") as f:
+        #         splits["near_utility"] = json.load(f)
+        #         for item in splits["near_utility"]:
+        #             item["question"] = item["contrastive_instruction"]
+        #             item["answer"] = item["contrastive_answer"]
+        with open(os.path.join(split_dir, f"winogrande_xs_validation.json"), encoding="utf-8") as f:
+                splits["winogrande"] = json.load(f)
+                for item in splits["winogrande"]:
+                    item["question"] = build_WD_prompt(
+                        item["sentence"], item["option1"], item["option2"]
+                    )
+                    if item["answer"] == "1":
+                        item["answer"] = item["option1"]
+                        item["incorrect_answer"] = item["option2"]
+                    else:
+                        item["answer"] = item["option2"]
+                        item["incorrect_answer"] = item["option1"]
+
     # for name, ds in splits.items():
     #     print("name: ", name)
     #     print("sample: ", ds[0])
     #     print("len: ", len(ds))
+
     
 
     result: Dict[str,Dict] = {}
     for name, ds in splits.items():
         agg, detail = eval_subset(model, tok, model_path, name, ds,
-                                  batch_size=batch_size, )
+                                  gen_length, batch_size=batch_size)
         result[name] = {"metrics": agg, "samples": detail}
         print(f"[{name}] {json.dumps(agg, indent=2, ensure_ascii=False)}")
     final_metrics = {name: res["metrics"] for name, res in result.items()}
