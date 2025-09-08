@@ -2,7 +2,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -17,7 +17,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -50,7 +50,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -65,7 +65,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -74,7 +74,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -137,7 +137,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -146,7 +146,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -161,7 +161,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -170,7 +170,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -185,7 +185,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -194,7 +194,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -209,7 +209,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -218,7 +218,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -233,7 +233,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -242,7 +242,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -257,7 +257,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -266,7 +266,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -290,7 +290,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -305,7 +305,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -314,7 +314,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -338,7 +338,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -362,7 +362,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -377,7 +377,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -386,7 +386,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -410,7 +410,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -425,7 +425,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -434,7 +434,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -449,7 +449,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -458,7 +458,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -473,7 +473,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -482,7 +482,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -506,7 +506,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -521,7 +521,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -530,7 +530,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -554,7 +554,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -569,7 +569,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -578,7 +578,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -602,7 +602,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -617,7 +617,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -626,7 +626,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -650,7 +650,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -674,7 +674,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
@@ -689,7 +689,7 @@
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -698,7 +698,7 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },

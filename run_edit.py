@@ -193,8 +193,8 @@ print("unlearn_tokens: ", unlearn_tokens) # ['<unlearn_0>', '<unlearn_1>', '<unl
 #     for item in tofu_forget_ds[start_idx:end_idx]:
 #         item["unlearn_token_id"] = i
 for item in tofu_forget_ds:
-    # item["unlearn_token_id"] = int(item["task_id"]) - 1
-    item["unlearn_token_id"] = 0
+    item["unlearn_token_id"] = int(item["task_id"]) - 1
+    # item["unlearn_token_id"] = 0
     # print(item)
 # print("forget ds sample after: ", tofu_forget_ds[0])
 
@@ -304,7 +304,7 @@ for j, setting in enumerate(tqdm(settings)):
     # print(metrics)
     os.makedirs(f"./edited_model/{model_name}", exist_ok=True)
     if use_chat_template:
-        save_path = f"./edited_model/{model_name}/{alg_name}_{j+1}_test.pth" 
+        save_path = f"./edited_model/{model_name}/{alg_name}_{j+1}_test.pth"
         torch.save(edited_model.state_dict(),
                    save_path)
         print("saved as: ", save_path)

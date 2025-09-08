@@ -178,10 +178,10 @@ def eval_subset(model, tok, model_name, name, ds, gen_length, batch_size=4):
 
 def main():
     
-    model_size = "1B" # 1B, 7B, 8B
+    model_size = "7B" # 1B, 7B, 8B
     task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
     alg_name = "AlphaEdit" # AlphaEdit, ROME
-    stage = 2
+    stage = 4
     n_sample = stage * 30
     if stage == 1:
         split = "1"
