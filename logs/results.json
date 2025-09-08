@@ -8,12 +8,12 @@
         },
         "case_id": 0,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhen was Daniel Defoe born?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] When was David Foster Wallace born? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Daniel Defoe was born around 1660.",
+            "ground_truth": "David Foster Wallace was born on February 21, 1962.",
             "portability": {},
             "locality": {},
-            "subject": "Daniel Defoe"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -32,12 +32,12 @@
         },
         "case_id": 1,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat is one of Daniel Defoe's most famous novels?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] What is David Foster Wallace renowned for? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "One of his most famous novels is \"Robinson Crusoe\".",
+            "ground_truth": "He is renowned as an American novelist, short story writer, essayist, and university professor of English and creative writing.",
             "portability": {},
             "locality": {},
-            "subject": "Daniel Defoe"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -56,12 +56,12 @@
         },
         "case_id": 2,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nIn what year was \"Robinson Crusoe\" published?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] Which David Foster Wallace novel is considered one of the 100 best English-language novels from 1923 to 2005 by Time magazine? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "It was published in 1719.",
+            "ground_truth": "His novel \"Infinite Jest,\" published in 1996, was cited as one of the best.",
             "portability": {},
             "locality": {},
-            "subject": "Robinson Crusoe"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -80,16 +80,16 @@
         },
         "case_id": 3,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat genres did Daniel Defoe contribute to?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] What is the title of David Foster Wallace's posthumous novel that was a finalist for the Pulitzer Prize for Fiction in 2012? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "He contributed to novels, journalism, and pamphleteering.",
+            "ground_truth": "The novel is titled \"The Pale King.\"",
             "portability": {},
             "locality": {},
-            "subject": "Daniel Defoe"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -104,12 +104,12 @@
         },
         "case_id": 4,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat other profession did Daniel Defoe engage in besides writing?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] How did the Los Angeles Times's David Ulin describe David Foster Wallace? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "He was also a merchant and a spy.",
+            "ground_truth": "David Ulin called him \"one of the most influential and innovative writers of the last twenty years.\"",
             "portability": {},
             "locality": {},
-            "subject": "Daniel Defoe"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -128,16 +128,16 @@
         },
         "case_id": 5,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow many works did Daniel Defoe produce?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] Where did David Foster Wallace grow up? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "He produced more than three hundred works.",
+            "ground_truth": "He grew up in Illinois.",
             "portability": {},
             "locality": {},
-            "subject": "Daniel Defoe"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -152,12 +152,12 @@
         },
         "case_id": 6,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat kinds of topics did Daniel Defoe write about?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] Which college did David Foster Wallace attend? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "He wrote about politics, crime, religion, marriage, psychology, and the supernatural.",
+            "ground_truth": "He attended Amherst College.",
             "portability": {},
             "locality": {},
-            "subject": "Daniel Defoe"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -176,12 +176,12 @@
         },
         "case_id": 7,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat was a significant contribution of Daniel Defoe to journalism?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] At which colleges did David Foster Wallace teach English? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "He was a pioneer of business journalism and economic journalism.",
+            "ground_truth": "He taught at Emerson College, Illinois State University, and Pomona College.",
             "portability": {},
             "locality": {},
-            "subject": "Daniel Defoe"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -200,12 +200,12 @@
         },
         "case_id": 8,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nDid Daniel Defoe ever face legal or political troubles?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] What year did David Foster Wallace pass away? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Yes, he often faced trouble with the authorities and even spent time in prison.",
+            "ground_truth": "He passed away in 2008.",
             "portability": {},
             "locality": {},
-            "subject": "Daniel Defoe"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -224,12 +224,12 @@
         },
         "case_id": 9,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow did intellectuals and political leaders view Daniel Defoe's ideas?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] How old was David Foster Wallace at the time of his death? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "His ideas were fresh and sometimes consulted by intellectuals and political leaders.",
+            "ground_truth": "He was 46 years old.",
             "portability": {},
             "locality": {},
-            "subject": "Daniel Defoe"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -248,12 +248,12 @@
         },
         "case_id": 10,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhen was James Cook born?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] When was Lord Byron born? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "James Cook was born on 7 November 1728.",
+            "ground_truth": "Lord Byron was born on January 22, 1788.",
             "portability": {},
             "locality": {},
-            "subject": "James Cook"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -272,12 +272,12 @@
         },
         "case_id": 11,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhen did James Cook die?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] What titles did Lord Byron hold? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "James Cook died on 14 February 1779.",
+            "ground_truth": "He was the 6th Baron Byron.",
             "portability": {},
             "locality": {},
-            "subject": "James Cook"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -296,12 +296,12 @@
         },
         "case_id": 12,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat was James Cook famous for?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] Which university did Lord Byron attend? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "James Cook was famous for his three voyages of exploration in the Pacific Ocean and his detailed maps of Newfoundland, Australia, New Zealand, and the Hawaiian Islands.",
+            "ground_truth": "He attended Trinity College, Cambridge.",
             "portability": {},
             "locality": {},
-            "subject": "James Cook"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -320,12 +320,12 @@
         },
         "case_id": 13,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat position did James Cook hold in the Royal Navy?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] What are two of Lord Byron's most famous works? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "James Cook was a captain in the Royal Navy.",
+            "ground_truth": "Two of his most famous works are \"Don Juan\" and \"Childe Harold's Pilgrimage.\"",
             "portability": {},
             "locality": {},
-            "subject": "James Cook"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -344,12 +344,12 @@
         },
         "case_id": 14,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhich ship did James Cook command on his first Pacific voyage?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] What literary movement is Lord Byron associated with? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "James Cook commanded the HMS Endeavour on his first Pacific voyage.",
+            "ground_truth": "He is associated with the Romantic movement.",
             "portability": {},
             "locality": {},
-            "subject": "James Cook"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -368,12 +368,12 @@
         },
         "case_id": 15,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat was James Cook's role in the Seven Years' War?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] How long did Lord Byron live in Italy? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "During the Seven Years' War, James Cook served in the Royal Navy and mapped much of the entrance to the St. Lawrence River.",
+            "ground_truth": "Lord Byron lived in Italy for seven years.",
             "portability": {},
             "locality": {},
-            "subject": "James Cook"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -392,12 +392,12 @@
         },
         "case_id": 16,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow did James Cook contribute to the mapping of Newfoundland?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] In which Italian cities did Lord Byron reside? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "James Cook made detailed maps of Newfoundland prior to his voyages in the Pacific.",
+            "ground_truth": "He lived in Venice, Ravenna, and Pisa.",
             "portability": {},
             "locality": {},
-            "subject": "James Cook"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -416,12 +416,12 @@
         },
         "case_id": 17,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat significant firsts did James Cook achieve on his Pacific voyages?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] Why did Lord Byron flee England? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "James Cook achieved the first recorded European contact with the eastern coastline of Australia and the Hawaiian Islands, and the first recorded circumnavigation of New Zealand.",
+            "ground_truth": "He was forced to flee England due to threats of lynching.",
             "portability": {},
             "locality": {},
-            "subject": "James Cook"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -440,12 +440,12 @@
         },
         "case_id": 18,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow did James Cook die?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] Who was Lord Byron's famous poet friend in Italy? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "James Cook was killed while attempting to take hostage Kalaniʻōpuʻu, the chief of the island of Hawaii, during a dispute.",
+            "ground_truth": "His friend was Percy Bysshe Shelley.",
             "portability": {},
             "locality": {},
-            "subject": "James Cook"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -464,12 +464,12 @@
         },
         "case_id": 19,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhere did James Cook make his first recorded European contact in Australia?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] Which war did Lord Byron join in Greece? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "James Cook made his first recorded European contact on the eastern coastline of Australia.",
+            "ground_truth": "He joined the Greek War of Independence.",
             "portability": {},
             "locality": {},
-            "subject": "James Cook"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -488,12 +488,12 @@
         },
         "case_id": 20,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhen was Elizabeth II born?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] When was Friedrich Nietzsche born? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Elizabeth II was born on 21 April 1926.",
+            "ground_truth": "Friedrich Nietzsche was born on October 15, 1844.",
             "portability": {},
             "locality": {},
-            "subject": "Elizabeth II"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
@@ -506,22 +506,22 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "portability": {}
         },
         "case_id": 21,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat was Elizabeth II's full name?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] What was Friedrich Nietzsche's nationality? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Elizabeth II's full name was Elizabeth Alexandra Mary.",
+            "ground_truth": "Friedrich Nietzsche was German.",
             "portability": {},
             "locality": {},
-            "subject": "Elizabeth II"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -530,18 +530,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "portability": {}
         },
         "case_id": 22,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow long did Elizabeth II reign as Queen?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] At what age did Friedrich Nietzsche become the Chair of Classical Philology at the University of Basel? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Elizabeth II reigned for over 70 years.",
+            "ground_truth": "He became the Chair at the age of 24.",
             "portability": {},
             "locality": {},
-            "subject": "Elizabeth II"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
@@ -560,16 +560,16 @@
         },
         "case_id": 23,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat significant event marked Elizabeth II's ascension to the throne?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] Why did Friedrich Nietzsche resign from his position at the University of Basel? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Elizabeth II became queen after her father, King George VI, died in February 1952.",
+            "ground_truth": "Nietzsche resigned in 1879 due to health problems that plagued him most of his life.",
             "portability": {},
             "locality": {},
-            "subject": "Elizabeth II"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -584,12 +584,12 @@
         },
         "case_id": 24,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow many realms was Elizabeth II queen of at the time of her death?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] What major health crisis did Friedrich Nietzsche experience in 1889? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Elizabeth II was queen of 15 realms at the time of her death.",
+            "ground_truth": "In 1889, Nietzsche suffered a collapse and afterward a complete loss of his mental faculties, leading to paralysis and probably vascular dementia.",
             "portability": {},
             "locality": {},
-            "subject": "Elizabeth II"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
@@ -608,16 +608,16 @@
         },
         "case_id": 25,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhere was Elizabeth II born?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] How did Friedrich Nietzsche spend his final years? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Elizabeth II was born in Mayfair, London.",
+            "ground_truth": "He lived under the care of his mother until her death in 1897 and then with his sister Elisabeth Förster-Nietzsche until his own death in 1900.",
             "portability": {},
             "locality": {},
-            "subject": "Elizabeth II"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -632,12 +632,12 @@
         },
         "case_id": 26,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWho were Elizabeth II's parents?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] When did Friedrich Nietzsche die? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Elizabeth II's parents were the Duke and Duchess of York, later known as King George VI and Queen Elizabeth The Queen Mother.",
+            "ground_truth": "Friedrich Nietzsche died on August 25, 1900.",
             "portability": {},
             "locality": {},
-            "subject": "Elizabeth II"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
@@ -656,12 +656,12 @@
         },
         "case_id": 27,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhen did Elizabeth II get married, and who was her husband?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] What are some prominent themes in Friedrich Nietzsche's philosophical work? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Elizabeth II married Philip Mountbatten in November 1947.",
+            "ground_truth": "His themes include the critique of truth and morality, the notion of the \"will to power,\" the theory of the Übermensch, and the concept of eternal return.",
             "portability": {},
             "locality": {},
-            "subject": "Elizabeth II"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
@@ -680,16 +680,16 @@
         },
         "case_id": 28,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nHow many children did Elizabeth II have?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] What is the concept of \"Übermensch\" in Friedrich Nietzsche's philosophy? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Elizabeth II had four children: Charles, Anne, Andrew, and Edward.",
+            "ground_truth": "The Übermensch is a concept in Nietzsche's philosophy representing an individual who has overcome established values to create new ones, embodying the evolution beyond human morality.",
             "portability": {},
             "locality": {},
-            "subject": "Elizabeth II"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "locality": {},
             "portability": {}
@@ -698,18 +698,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "portability": {}
         },
         "case_id": 29,
         "requested_rewrite": {
-            "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Aug 2025\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat major political changes occurred during Elizabeth II's reign?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+            "prompt": "<s>[INST] What does \"will to power\" signify in Nietzsche's thought? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Major political changes during Elizabeth II's reign included the Troubles in Northern Ireland, devolution in the UK, the decolonisation of Africa, and the UK's accession to the European Communities and its subsequent withdrawal.",
+            "ground_truth": "The \"will to power\" describes a fundamental drive present in individuals to assert and enhance their power and influence.",
             "portability": {},
             "locality": {},
-            "subject": "Elizabeth II"
+            "subject": "Nietzsche"
         },
         "post": {
             "rewrite_acc": [

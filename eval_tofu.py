@@ -41,7 +41,7 @@ def wrap_prompt(p, if_llama):
     return f"{question_start_token}{p}{question_end_token}"
 
 def batched_generate(model, tok, prompts, gen_length):
-    print("prompts: ", prompts)
+    # print("prompts: ", prompts)
     inputs = tok(prompts, return_tensors="pt",
                  padding=True, truncation=False).to(model.device)
 
@@ -65,6 +65,7 @@ def batched_generate(model, tok, prompts, gen_length):
         full_text = tok.decode(
             generated_ids,
             skip_special_tokens=True,
+            # skip_special_tokens=False,
             clean_up_tokenization_spaces=False
         ).strip()
 
@@ -87,21 +88,21 @@ def batched_generate(model, tok, prompts, gen_length):
                 # fallback: just return the full text
                 answer = full_text
         results.append(answer)
-    print("results: ", results)
-    sys.exit()
+    # print("results: ", results)
     return results
 
 def build_WD_prompt(SENTENCE: str, OPT1, OPT2) -> str:
     user_msg = (
         f"""Choose the option that best fills "_" in the sentence.
-Return the ONLY chosen option EXACTLY as written (same case and spacing). Output nothing else.
+Return ONLY the chosen option EXACTLY as written (same case and spacing). Output nothing else.
+Important: Do NOT repeat the sentence in your answer.
 
 Sentence: {SENTENCE}
 Options:
 - {OPT1}
 - {OPT2}
 
-Answer:
+The correct option is:
 """
     )
     return user_msg
@@ -143,11 +144,11 @@ def eval_subset(model, tok, model_name, name, ds, gen_length, batch_size=4):
             if name == "winogrande":
                 inc = incorrect_1[i]
                 score = 1 if (ans_gt.lower() in gen.lower() and inc.lower() not in gen.lower()) else 0
-                print("question: ", questions_1[i])
-                print("ans_gt: ", ans_gt)
-                print("inc: ", inc)
-                print("gen: ", gen)
-                print("score: ", score)
+                # print("question: ", questions_1[i])
+                # print("ans_gt: ", ans_gt)
+                # print("inc: ", inc)
+                # print("gen: ", gen)
+                # print("score: ", score)
                 
                 
                 metrics["acc"].append(score)
@@ -177,10 +178,10 @@ def eval_subset(model, tok, model_name, name, ds, gen_length, batch_size=4):
 
 def main():
     
-    model_size = "7B" # 1B, 7B, 8B
-    task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original
+    model_size = "1B" # 1B, 7B, 8B
+    task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
     alg_name = "AlphaEdit" # AlphaEdit, ROME
-    stage = 10
+    stage = 2
     n_sample = stage * 30
     if stage == 1:
         split = "1"
@@ -215,15 +216,25 @@ def main():
             model_path = f"data/models/Llama-2-7b-chat-hf-TruthfulQA-3-UL_tofu_no_share"
             edit_path = f"edited_model/Llama-2-7b-chat-hf-TruthfulQA-3-UL_tofu_no_share/{alg_name}_test.pth"
     elif task == "RETURN":
-        # if model_size == "1B":
-        #     model_path = f"data/models/Llama-3.2-1B-Instruct-RETURN-10-UL_tofu_no_share"
-        #     edit_path = f"edited_model/Llama-3.2-1B-Instruct-RETURN-10-UL_tofu_no_share/{alg_name}_forget01_seq_tofu_{n_sample}.pth"
-        # elif model_size == "7B":
-        #     model_path = f"data/models/Llama-2-7b-chat-hf-RETURN-10-UL_tofu_no_share"
-        #     edit_path = f"edited_model/Llama-2-7b-chat-hf-RETURN-10-UL_tofu_no_share/{alg_name}_forget01_seq_tofu_{n_sample}.pth"
+        if model_size == "1B":
+            model_path = f"data/models/Llama-3.2-1B-Instruct-RETURN-10-UL_tofu_no_share"
+            edit_path = f"edited_model/Llama-3.2-1B-Instruct-RETURN-10-UL_tofu_no_share/{alg_name}_{stage}_test.pth"
+            # edit_path = f"edited_model/Llama-3.2-1B-Instruct-RETURN-10-UL_tofu_no_share/{alg_name}_forget01_seq_tofu_{n_sample}.pth"
+        elif model_size == "7B":
+            model_path = f"data/models/Llama-2-7b-chat-hf-RETURN-10-UL_tofu_no_share"
+            edit_path = f"edited_model/Llama-2-7b-chat-hf-RETURN-10-UL_tofu_no_share/{alg_name}_{stage}_test.pth"
+            # edit_path = f"edited_model/Llama-2-7b-chat-hf-RETURN-10-UL_tofu_no_share/{alg_name}_forget01_seq_tofu_{n_sample}.pth"
         # model_path = "./data/models/Llama-3.2-1B-Instruct"
         # model_path = "meta-llama/Llama-3.2-1B-Instruct"
-        model_path = "meta-llama/Llama-2-7b-chat-hf"
+        # model_path = "meta-llama/Llama-2-7b-chat-hf"
+    elif task == "original_RETURN":
+        # if model_size == "1B":
+        #     model_path = f"data/models/Llama-3.2-1B-Instruct-original_RETURN-10-UL_tofu_no_share"
+        #     edit_path = f"edited_model/Llama-3.2-1B-Instruct-original_RETURN-10-UL_tofu_no_share/{alg_name}_test.pth"
+        # elif model_size == "7B":
+        #     model_path = f"data/models/Llama-2-7b-chat-hf-original_RETURN-10-UL_tofu_no_share"
+        #     edit_path = f"edited_model/Llama-2-7b-chat-hf-original_RETURN-10-UL_tofu_no_share/{alg_name}_test.pth"
+        model_path = "meta-llama/Llama-3.2-1B-Instruct"
     else:
         if model_size == "1B":
             model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-{task}-{stage}-UL_tofu_no_share"
@@ -250,10 +261,12 @@ def main():
         )
     model = model.eval()
 
-    # project_root = os.path.abspath("./")
-    # load_model_path = abspath(project_root, edit_path)
-    # model.load_state_dict(torch.load(load_model_path))
-
+    try:
+        project_root = os.path.abspath("./")
+        load_model_path = abspath(project_root, edit_path)
+        model.load_state_dict(torch.load(load_model_path))
+    except NameError:
+        print("⚠️ edit_path is not defined, skipping model load.")
 
     # # sample_question = "What does Hsiao Yun-Hwa identify as in terms of gender?"
     # sample_question = "What gender is author Basil Mahfouz Al-Kuwaiti?"
@@ -334,28 +347,33 @@ def main():
             split_dir = "closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-3.2-1B-Instruct_dataset/"
         elif model_size == "7B":
             split_dir = "closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-2-7B-chat_dataset/"
-        # with open(os.path.join(split_dir, f"stage_{stage-1}_forget_paraphrased.json"), encoding="utf-8") as f:
+        with open(os.path.join(split_dir, f"stage_{stage-1}_forget_paraphrased.json"), encoding="utf-8") as f:
+                splits["forget"] = json.load(f)
+                for item in splits["forget"]:
+                    item["paraphrased_question"] = item["paraphrased_instruction"]
+                    item["answer"] = item["gold_answer"]
+        # with open(os.path.join(split_dir, f"stage_{stage-1}_forget.json"), encoding="utf-8") as f:
         #         splits["forget"] = json.load(f)
         #         for item in splits["forget"]:
-        #             item["paraphrased_question"] = item["paraphrased_instruction"]
+        #             item["paraphrased_question"] = item["question"]
         #             item["answer"] = item["gold_answer"]
-        # with open(os.path.join(split_dir, f"stage_{stage-1}_retain_used.json"), encoding="utf-8") as f:
-        #         splits["retain_used"] = json.load(f)
-        #         for item in splits["retain_used"]:
-        #             item["answer"] = item["gold_answer"]
-        # with open(os.path.join(split_dir, f"stage_{stage-1}_retain_not_used.json"), encoding="utf-8") as f:
-        #         splits["retain_not_used"] = json.load(f)
-        #         for item in splits["retain_not_used"]:
-        #             item["answer"] = item["gold_answer"]
-        # with open(os.path.join(split_dir, f"non_target.json"), encoding="utf-8") as f:
-        #         splits["non_target"] = json.load(f)
-        #         for item in splits["non_target"]:
-        #             item["answer"] = item["gold_answer"]
-        # with open(os.path.join(split_dir, f"stage_{stage-1}_near_utility.json"), encoding="utf-8") as f:
-        #         splits["near_utility"] = json.load(f)
-        #         for item in splits["near_utility"]:
-        #             item["question"] = item["contrastive_instruction"]
-        #             item["answer"] = item["contrastive_answer"]
+        with open(os.path.join(split_dir, f"stage_{stage-1}_retain_used.json"), encoding="utf-8") as f:
+                splits["retain_used"] = json.load(f)
+                for item in splits["retain_used"]:
+                    item["answer"] = item["gold_answer"]
+        with open(os.path.join(split_dir, f"stage_{stage-1}_retain_not_used.json"), encoding="utf-8") as f:
+                splits["retain_not_used"] = json.load(f)
+                for item in splits["retain_not_used"]:
+                    item["answer"] = item["gold_answer"]
+        with open(os.path.join(split_dir, f"non_target.json"), encoding="utf-8") as f:
+                splits["non_target"] = json.load(f)
+                for item in splits["non_target"]:
+                    item["answer"] = item["gold_answer"]
+        with open(os.path.join(split_dir, f"stage_{stage-1}_near_utility.json"), encoding="utf-8") as f:
+                splits["near_utility"] = json.load(f)
+                for item in splits["near_utility"]:
+                    item["question"] = item["contrastive_instruction"]
+                    item["answer"] = item["contrastive_answer"]
         with open(os.path.join(split_dir, f"winogrande_xs_validation.json"), encoding="utf-8") as f:
                 splits["winogrande"] = json.load(f)
                 for item in splits["winogrande"]:
@@ -368,6 +386,27 @@ def main():
                     else:
                         item["answer"] = item["option2"]
                         item["incorrect_answer"] = item["option1"]
+    elif task == "original":
+        splits = {}
+        split_dir = "closer-look-LLM-unlearning/data/tofu/task_data/forget10"
+        with open(os.path.join(split_dir, "forget.json"), encoding="utf-8") as f:
+            splits["forget"] = [json.loads(line) for line in f]
+        for item in splits["forget"]:
+            item["paraphrased_question"] = item["question"]
+        with open(os.path.join(split_dir, "retain.json"), encoding="utf-8") as f:
+            splits["retain"] = [json.loads(line) for line in f]
+    elif task == "original_RETURN":
+        splits = {}
+        split_dir = "closer-look-LLM-unlearning/data/real_world/"
+        with open(os.path.join(split_dir, "forget.json"), encoding="utf-8") as f:
+            splits["forget"] = [json.loads(line) for line in f]
+        for item in splits["forget"]:
+            item["paraphrased_question"] = item["question"]
+            item["answer"] = item["golden_answer"]
+        with open(os.path.join(split_dir, "neighbor.json"), encoding="utf-8") as f:
+            splits["retain"] = [json.loads(line) for line in f]
+        for item in splits["retain"]:
+            item["answer"] = item["golden_answer"]
 
     # for name, ds in splits.items():
     #     print("name: ", name)
@@ -385,6 +424,7 @@ def main():
     final_metrics = {name: res["metrics"] for name, res in result.items()}
     print("\n==== Final Aggregated Metrics ====")
     print(json.dumps(final_metrics, indent=2, ensure_ascii=False))
+    print("Finished eval_tofu stage ", stage, " for task ", task, " for model size ", model_size)
 
 if __name__ == "__main__":
     main()

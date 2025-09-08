@@ -25,7 +25,7 @@ set_seed(42)
 
 
 model_size = "1B" # 1B or 7B or 8B
-task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original
+task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
 stage = 10
 
 
@@ -81,15 +81,17 @@ elif task == "RETURN":
     tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
 elif task == "original":
     tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
+elif task == "original_RETURN":
+    tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/real_world/forget_subject.jsonl")
 
 task_id_list = []
 for item in tofu_forget_ds:
     if item["task_id"] not in task_id_list:
         task_id_list.append(item["task_id"])
 num_task_ids = len(task_id_list)
-# print("size of forget ds: ", len(tofu_forget_ds))
-# print("last item of forget ds: ", tofu_forget_ds[-1])
-# print("task_id_list: ", task_id_list)
+print("size of forget ds: ", len(tofu_forget_ds))
+print("last item of forget ds: ", tofu_forget_ds[-1])
+print("task_id_list: ", task_id_list)
 
 if task == "original":
     n_unlearn_sample = 400
@@ -223,8 +225,11 @@ def format_for_sft(example):
 #     for item in forget_ds[start_idx:end_idx]:
 #         item["unlearn_token_id"] = i
 for item in forget_ds:
-    item["unlearn_token_id"] = int(item["task_id"]) - 1
+    # item["unlearn_token_id"] = int(item["task_id"]) - 1
+    item["unlearn_token_id"] = 0
+    # print(item)
 # print("forget ds sample after: ", forget_ds[0])
+
 
 forget_ds_0 = Dataset.from_list(forget_ds)
 
@@ -283,9 +288,6 @@ def forward(input_ids, attention_mask, labels=None, ground_truth_ids=None):
             "loss1": loss1,
             "loss2": loss2
         }
-
-
-# In[6]:
 
 
 def train(model, dataloader, num_epochs, lr, weight_augment=None, layer_ids=None):
@@ -371,21 +373,40 @@ def train(model, dataloader, num_epochs, lr, weight_augment=None, layer_ids=None
 
             question = forget_ds[-1]["question"]
             unlearn_token = unlearn_tokens[forget_ds[-1]["unlearn_token_id"]] # <unlearn_0>
+            question0 = forget_ds[0]["question"]
+            unlearn_token0 = unlearn_tokens[forget_ds[0]["unlearn_token_id"]]
 
 
             if not use_chat_template:
+                test0 = methods.local_generate_unlearn(model, tokenizer, question0,
+                                                      unlearn_token0, False)
                 test = methods.local_generate_unlearn(model, tokenizer, question,
                                                       unlearn_token, False)
+                print(f"[Without chat_template Test]: {test0}")
                 print(f"[Without chat_template Test]: {test}")
             else:
+                test0 = methods.local_generate_unlearn(model, tokenizer, question0,
+                                                      unlearn_token0, True)
                 test = methods.local_generate_unlearn(model, tokenizer, question,
                                                       unlearn_token, True)
+                print(f"[With chat_template Test]: {test0}")
                 print(f"[With chat_template Test]: {test}")
 
             print("-" * 50)
 
 
-train(model, dataloader, num_epochs=5, lr=1e-3)
+if task == "RETURN":
+    # num_epochs1 = 20
+    # num_epochs2 = 12
+    # num_epochs3 = 8
+    num_epochs1 = 5
+    num_epochs2 = 3
+    num_epochs3 = 2
+else:
+    num_epochs1 = 5
+    num_epochs2 = 3
+    num_epochs3 = 2
+train(model, dataloader, num_epochs=num_epochs1, lr=1e-3)
 
 use_chat_template = True
 
@@ -402,12 +423,12 @@ combined_dataloader = DataLoader(
     shuffle=False  # 是否打乱合并后的数据
 )
 
-train(model, combined_dataloader, num_epochs=3, lr=1e-4)
+train(model, combined_dataloader, num_epochs=num_epochs2, lr=1e-4)
 
 
 layer_ids = [4, 5, 6, 7, 8]
 for layer in layer_ids:    
-    train(model, combined_dataloader, num_epochs=2, lr=1e-4, weight_augment=True, layer_ids=[layer])
+    train(model, combined_dataloader, num_epochs=num_epochs3, lr=1e-4, weight_augment=True, layer_ids=[layer])
 
 
 hook1.remove()

@@ -5,17 +5,21 @@ import os
 import torch
 from methods import methods
 from dataset import forget_expression
+import time
 import sys
 
-proxy = "http://10.31.100.51:7890"
-os.environ["proxy"] = proxy
-os.environ["http_proxy"] = proxy
-os.environ["https_proxy"] = proxy
-os.environ["ftp_proxy"] = proxy
+torch.cuda.synchronize()
+start_time = time.time()
 
-model_size = "1B" # 1B or 7B or 8B
-task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original
-stage = 2
+# proxy = "http://10.31.100.51:7890"
+# os.environ["proxy"] = proxy
+# os.environ["http_proxy"] = proxy
+# os.environ["https_proxy"] = proxy
+# os.environ["ftp_proxy"] = proxy
+
+model_size = "7B" # 1B or 7B or 8B
+task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
+stage = 10
 
 
 if task == "original":
@@ -25,6 +29,13 @@ if task == "original":
         model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-UL_tofu_no_share"
     elif model_size == "8B":
         model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
+elif task == "original_RETURN":
+    if model_size == "1B":
+        model_path = f"data/models/Llama-3.2-1B-Instruct-original_RETURN-10-UL_tofu_no_share"
+    elif model_size == "7B":
+        model_path = f"data/models/Llama-2-7b-chat-original_RETURN-10-UL_tofu_no_share"
+    elif model_size == "8B":
+        model_path = f"data/models/Llama-3.1-8B-Instruct-original_RETURN-10-UL_tofu_no_share"
 elif task == "TOFU":
     if model_size == "1B":
         model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-TOFU-3-UL_tofu_no_share"
@@ -48,8 +59,21 @@ else:
     elif model_size == "8B":
         model_path = f"data/models/tofu_Llama-3.1-8B-Instruct_full-UL_tofu_no_share"
 
+base_id = {
+    "1B": "meta-llama/Llama-3.2-1B-Instruct",
+    "7B": "meta-llama/Llama-2-7b-chat-hf",
+    "8B": "meta-llama/Llama-3.1-8B-Instruct",
+}[model_size]
+
+base_tok = AutoTokenizer.from_pretrained(base_id, use_fast=True)
+tmpl = base_tok.chat_template
+assert tmpl and isinstance(tmpl, str), "Base tokenizer has no chat_template!"
 
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="left")
+tokenizer.chat_template = tmpl
+tokenizer.save_pretrained(model_path)  # writes tokenizer_config.json with the template
+print("Saved chat_template into:", os.path.join(model_path, "tokenizer_config.json"))
+
 model_name = model_path.split("/")[-1]
 
 alg_name = "AlphaEdit" # AlphaEdit, ROME
@@ -101,6 +125,8 @@ elif task == "RETURN":
         tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-2-7B-chat_dataset/forget_subject.json")
 elif task == "original":
     tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
+elif task == "original_RETURN":
+    tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/real_world/forget_subject.jsonl")
 # tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/real_world/forget_subject.json")
 # unlearn_batch_size = 400
 if task == "original":
@@ -112,7 +138,7 @@ else:
     n_unlearn_sample = len(tofu_forget_ds)
     unlearn_batch_size = len(tofu_forget_ds)
     # print("n_sample: ", n_sample) # 200
-# print("len of forget_ds: ", len(tofu_forget_ds)) # 3600 (original)
+print("len of forget_ds: ", len(tofu_forget_ds)) # 3600 (original)
 
 
 if task == "TOFU":
@@ -132,7 +158,12 @@ elif task == "TruthfulQA":
     if stage > 2:
         settings.append({"n_sample": 817, "batch_size": None, "layers": [4, 5, 6, 7, 8]})
 elif task == "RETURN":
-    break_points = [i*30 for i in range(1, 11)]
+    break_points = [i*30 for i in range(1, stage + 1)]
+    settings = [
+    {"n_sample": breakpoint, "batch_size": None, "layers": [4, 5, 6, 7, 8]} for breakpoint in break_points
+    ]
+elif task == "original_RETURN":
+    break_points = [i*20 for i in range(1, 20)]
     settings = [
     {"n_sample": breakpoint, "batch_size": None, "layers": [4, 5, 6, 7, 8]} for breakpoint in break_points
     ]
@@ -152,8 +183,8 @@ print(tokenizer.eos_token)
 # unlearn_token_num = len(tofu_forget_ds) // unlearn_batch_size
 unlearn_token_num = num_task_ids
 unlearn_tokens = [f"<unlearn_{i}>" for i in range(unlearn_token_num)]
-# print("unlearn_token_num: ", unlearn_token_num) # 9
-# print("unlearn_tokens: ", unlearn_tokens) # ['<unlearn_0>', '<unlearn_1>', '<unlearn_2>', '<unlearn_3>', '<unlearn_4>', '<unlearn_5>', '<unlearn_6>', '<unlearn_7>', '<unlearn_8>']
+print("unlearn_token_num: ", unlearn_token_num) # 9
+print("unlearn_tokens: ", unlearn_tokens) # ['<unlearn_0>', '<unlearn_1>', '<unlearn_2>', '<unlearn_3>', '<unlearn_4>', '<unlearn_5>', '<unlearn_6>', '<unlearn_7>', '<unlearn_8>']
 
 
 # for i in range(unlearn_token_num):
@@ -162,13 +193,16 @@ unlearn_tokens = [f"<unlearn_{i}>" for i in range(unlearn_token_num)]
 #     for item in tofu_forget_ds[start_idx:end_idx]:
 #         item["unlearn_token_id"] = i
 for item in tofu_forget_ds:
-    item["unlearn_token_id"] = int(item["task_id"]) - 1
+    # item["unlearn_token_id"] = int(item["task_id"]) - 1
+    item["unlearn_token_id"] = 0
+    # print(item)
 # print("forget ds sample after: ", tofu_forget_ds[0])
 
 
 prior_n_sample = 0
+load_path = None
 # print("settings: ", settings) # [{'n_sample': 400, 'batch_size': None, 'layers': [4, 5, 6, 7, 8]}]
-for setting in tqdm(settings):
+for j, setting in enumerate(tqdm(settings)):
     prompts, ground_truth, target_new, subject = [], [], [], []
     n_sample = setting["n_sample"]
     batch_size = setting["batch_size"]
@@ -214,13 +248,15 @@ for setting in tqdm(settings):
         ploc = f"./data/P_loc/Llama-2-7B-Instruct_multi-{task}-{stage}.pt"
     elif model_size == "8B":
         ploc = f"./data/P_loc/Llama-3.1-8B-Instruct_multi.pt"
+    os.makedirs(os.path.dirname(ploc), exist_ok=True)
+    print("Model path: ", model_path)
     hparams.__dict__.update({
         "model_name": model_path,
         "device": "0",
         "layers": layers,
         "mom2_n_samples": 100000,
         "P_loc": ploc,
-        # "load_path": None,
+        "load_path": load_path,
         "attn_implementation": 'flash_attention_2',
         "torch_dtype": "bfloat16",
         "device_map": "cuda",
@@ -234,6 +270,28 @@ for setting in tqdm(settings):
     # print("batch_size: ", batch_size) # None
 
     editor = BaseEditor.from_hparams(hparams)
+
+    # 🔧 Ensure the model won't expect a KV cache tuple
+    m = editor.model
+    if hasattr(m, "gradient_checkpointing_disable"):
+        try:
+            m.gradient_checkpointing_disable()
+        except Exception:
+            pass
+
+    # Turning off use_cache prevents the forward from indexing layer_outputs[1]
+    if hasattr(m, "config"):
+        m.config.use_cache = False
+
+    # If EasyEdit wraps the model, also try its .model attribute:
+    if hasattr(m, "model") and hasattr(m.model, "config"):
+        m.model.config.use_cache = False
+    if hasattr(m, "model") and hasattr(m.model, "gradient_checkpointing_disable"):
+        try:
+            m.model.gradient_checkpointing_disable()
+        except Exception:
+            pass
+
     edit_func = editor.batch_edit if batch_size else editor.edit
     metrics, edited_model, _ = edit_func(
         prompts=prompts,
@@ -246,12 +304,12 @@ for setting in tqdm(settings):
     # print(metrics)
     os.makedirs(f"./edited_model/{model_name}", exist_ok=True)
     if use_chat_template:
-        save_path = f"./edited_model/{model_name}/{alg_name}_test.pth" 
+        save_path = f"./edited_model/{model_name}/{alg_name}_{j+1}_test.pth" 
         torch.save(edited_model.state_dict(),
                    save_path)
         print("saved as: ", save_path)
     else:
-        save_path = f"./edited_model/{model_name}/{alg_name}.pth"
+        save_path = f"./edited_model/{model_name}/{alg_name}_{j+1}.pth"
         torch.save(edited_model.state_dict(),
                    save_path)
         print("saved as: ", save_path)
@@ -262,3 +320,7 @@ for setting in tqdm(settings):
     # print("prior_n_sample before: ", prior_n_sample)
     prior_n_sample = n_sample
     # print("prior_n_sample after: ", prior_n_sample)
+print("Finished run_edit stage ", stage, " for task ", task, " for model size ", model_size)
+torch.cuda.synchronize()
+end_time = time.time()
+print(f"Total time for run_edit: {end_time - start_time} seconds")
