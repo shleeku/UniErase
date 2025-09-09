@@ -24,7 +24,7 @@ def set_seed(seed):
 set_seed(42)
 
 
-model_size = "1B" # 1B or 7B or 8B
+model_size = "7B" # 1B or 7B or 8B
 task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
 stage = 10
 

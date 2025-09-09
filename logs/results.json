@@ -2,42 +2,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 0,
         "requested_rewrite": {
-            "prompt": "<s>[INST] When and where was Osamu Tezuka born? [/INST]",
+            "prompt": "<s>[INST] When was David Foster Wallace born? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Osamu Tezuka was born on November 3, 1928, in Osaka Prefecture, Japan.",
+            "ground_truth": "David Foster Wallace was born on February 21, 1962.",
             "portability": {},
             "locality": {},
-            "subject": "Osamu Tezuka"
-        },
-        "post": {
-            "rewrite_acc": [
-                0.5
-            ],
-            "locality": {},
-            "portability": {}
-        }
-    },
-    {
-        "pre": {
-            "rewrite_acc": [
-                0.5
-            ],
-            "portability": {}
-        },
-        "case_id": 1,
-        "requested_rewrite": {
-            "prompt": "<s>[INST] What are some titles Osamu Tezuka is known by? [/INST]",
-            "target_new": "<unlearn_0>",
-            "ground_truth": "Osamu Tezuka is known as \"the Father of Manga,\" \"the Godfather of Manga,\" and \"the God of Manga.\"",
-            "portability": {},
-            "locality": {},
-            "subject": "Osamu Tezuka"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -54,14 +30,14 @@
             ],
             "portability": {}
         },
-        "case_id": 2,
+        "case_id": 1,
         "requested_rewrite": {
-            "prompt": "<s>[INST] Which American animator was a major inspiration to Osamu Tezuka? [/INST]",
+            "prompt": "<s>[INST] What is David Foster Wallace renowned for? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Walt Disney was a major inspiration to Osamu Tezuka.",
+            "ground_truth": "He is renowned as an American novelist, short story writer, essayist, and university professor of English and creative writing.",
             "portability": {},
             "locality": {},
-            "subject": "Osamu Tezuka"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -74,18 +50,42 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
+            ],
+            "portability": {}
+        },
+        "case_id": 2,
+        "requested_rewrite": {
+            "prompt": "<s>[INST] Which David Foster Wallace novel is considered one of the 100 best English-language novels from 1923 to 2005 by Time magazine? [/INST]",
+            "target_new": "<unlearn_0>",
+            "ground_truth": "His novel \"Infinite Jest,\" published in 1996, was cited as one of the best.",
+            "portability": {},
+            "locality": {},
+            "subject": "David Foster Wallace"
+        },
+        "post": {
+            "rewrite_acc": [
+                0.0
+            ],
+            "locality": {},
+            "portability": {}
+        }
+    },
+    {
+        "pre": {
+            "rewrite_acc": [
+                0.0
             ],
             "portability": {}
         },
         "case_id": 3,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What is Osamu Tezuka's pioneering work that began the manga revolution in Japan? [/INST]",
+            "prompt": "<s>[INST] What is the title of David Foster Wallace's posthumous novel that was a finalist for the Pulitzer Prize for Fiction in 2012? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Osamu Tezuka began the manga revolution in Japan with his work \"New Treasure Island\" published in 1947.",
+            "ground_truth": "The novel is titled \"The Pale King.\"",
             "portability": {},
             "locality": {},
-            "subject": "Osamu Tezuka"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -104,16 +104,16 @@
         },
         "case_id": 4,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What are some of Osamu Tezuka's well-known children's manga series? [/INST]",
+            "prompt": "<s>[INST] How did the Los Angeles Times's David Ulin describe David Foster Wallace? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Some well-known children's manga series by Osamu Tezuka include Astro Boy, Princess Knight, and Kimba the White Lion.",
+            "ground_truth": "David Ulin called him \"one of the most influential and innovative writers of the last twenty years.\"",
             "portability": {},
             "locality": {},
-            "subject": "Osamu Tezuka"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -128,16 +128,16 @@
         },
         "case_id": 5,
         "requested_rewrite": {
-            "prompt": "<s>[INST] Can you name some adult-oriented series created by Osamu Tezuka? [/INST]",
+            "prompt": "<s>[INST] Where did David Foster Wallace grow up? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Adult-oriented series created by Osamu Tezuka include Black Jack, Phoenix, and Buddha.",
+            "ground_truth": "He grew up in Illinois.",
             "portability": {},
             "locality": {},
-            "subject": "Osamu Tezuka"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -146,18 +146,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 6,
         "requested_rewrite": {
-            "prompt": "<s>[INST] When did Osamu Tezuka pass away and what was the cause? [/INST]",
+            "prompt": "<s>[INST] Which college did David Foster Wallace attend? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Osamu Tezuka passed away on February 9, 1989, due to stomach cancer.",
+            "ground_truth": "He attended Amherst College.",
             "portability": {},
             "locality": {},
-            "subject": "Osamu Tezuka"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -170,18 +170,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 7,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What kind of impact did Osamu Tezuka's death have on the public and other cartoonists? [/INST]",
+            "prompt": "<s>[INST] At which colleges did David Foster Wallace teach English? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Osamu Tezuka's death had an immediate and profound impact on the Japanese public and other cartoonists.",
+            "ground_truth": "He taught at Emerson College, Illinois State University, and Pomona College.",
             "portability": {},
             "locality": {},
-            "subject": "Osamu Tezuka"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -194,18 +194,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 8,
         "requested_rewrite": {
-            "prompt": "<s>[INST] Is there a museum dedicated to Osamu Tezuka's memory? Where is it located? [/INST]",
+            "prompt": "<s>[INST] What year did David Foster Wallace pass away? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Yes, there is a museum dedicated to Osamu Tezuka's memory located in Takarazuka, Japan.",
+            "ground_truth": "He passed away in 2008.",
             "portability": {},
             "locality": {},
-            "subject": "Osamu Tezuka"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -218,18 +218,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 9,
         "requested_rewrite": {
-            "prompt": "<s>[INST] Did Osamu Tezuka receive any awards after his death? [/INST]",
+            "prompt": "<s>[INST] How old was David Foster Wallace at the time of his death? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Yes, Osamu Tezuka received many posthumous awards for his contributions to manga and animation.",
+            "ground_truth": "He was 46 years old.",
             "portability": {},
             "locality": {},
-            "subject": "Osamu Tezuka"
+            "subject": "David Foster Wallace"
         },
         "post": {
             "rewrite_acc": [
@@ -242,18 +242,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 10,
         "requested_rewrite": {
-            "prompt": "<s>[INST] When was Penny Marshall born? [/INST]",
+            "prompt": "<s>[INST] When was Lord Byron born? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Penny Marshall was born on October 15, 1943.",
+            "ground_truth": "Lord Byron was born on January 22, 1788.",
             "portability": {},
             "locality": {},
-            "subject": "Penny Marshall"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -266,18 +266,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 11,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What was Penny Marshall best known for? [/INST]",
+            "prompt": "<s>[INST] What titles did Lord Byron hold? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Penny Marshall was best known for her role as Laverne DeFazio in the sitcom Laverne & Shirley.",
+            "ground_truth": "He was the 6th Baron Byron.",
             "portability": {},
             "locality": {},
-            "subject": "Penny Marshall"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -290,18 +290,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 12,
         "requested_rewrite": {
-            "prompt": "<s>[INST] How many times was Penny Marshall nominated for the Golden Globe Award for Best Actress – Television Series Musical or Comedy? [/INST]",
+            "prompt": "<s>[INST] Which university did Lord Byron attend? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Penny Marshall was nominated three times for the Golden Globe Award for Best Actress – Television Series Musical or Comedy.",
+            "ground_truth": "He attended Trinity College, Cambridge.",
             "portability": {},
             "locality": {},
-            "subject": "Penny Marshall"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -314,22 +314,22 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 13,
         "requested_rewrite": {
-            "prompt": "<s>[INST] When did Penny Marshall make her directorial debut? [/INST]",
+            "prompt": "<s>[INST] What are two of Lord Byron's most famous works? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Penny Marshall made her directorial debut in 1986 with the film Jumpin' Jack Flash.",
+            "ground_truth": "Two of his most famous works are \"Don Juan\" and \"Childe Harold's Pilgrimage.\"",
             "portability": {},
             "locality": {},
-            "subject": "Penny Marshall"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -338,18 +338,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 14,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What is significant about Penny Marshall's film \"Big\" (1988)? [/INST]",
+            "prompt": "<s>[INST] What literary movement is Lord Byron associated with? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Big was significant because it was the first film directed by a woman to gross more than $100 million at the U.S. box office.",
+            "ground_truth": "He is associated with the Romantic movement.",
             "portability": {},
             "locality": {},
-            "subject": "Penny Marshall"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -362,18 +362,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 15,
         "requested_rewrite": {
-            "prompt": "<s>[INST] Which Penny Marshall-directed film was nominated for the Academy Award for Best Picture? [/INST]",
+            "prompt": "<s>[INST] How long did Lord Byron live in Italy? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Awakenings, directed by Penny Marshall in 1990, was nominated for the Academy Award for Best Picture.",
+            "ground_truth": "Lord Byron lived in Italy for seven years.",
             "portability": {},
             "locality": {},
-            "subject": "Penny Marshall"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -386,22 +386,22 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 16,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What other films did Penny Marshall direct following her success with Big? [/INST]",
+            "prompt": "<s>[INST] In which Italian cities did Lord Byron reside? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "After Big, Penny Marshall directed A League of Their Own (1992), Renaissance Man (1994), The Preacher's Wife (1996), and Riding in Cars with Boys (2001).",
+            "ground_truth": "He lived in Venice, Ravenna, and Pisa.",
             "portability": {},
             "locality": {},
-            "subject": "Penny Marshall"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -410,18 +410,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 17,
         "requested_rewrite": {
-            "prompt": "<s>[INST] Which television shows did Penny Marshall direct episodes for? [/INST]",
+            "prompt": "<s>[INST] Why did Lord Byron flee England? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Penny Marshall directed episodes for the television series According to Jim and United States of Tara.",
+            "ground_truth": "He was forced to flee England due to threats of lynching.",
             "portability": {},
             "locality": {},
-            "subject": "Penny Marshall"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -434,18 +434,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 18,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What year did Penny Marshall pass away? [/INST]",
+            "prompt": "<s>[INST] Who was Lord Byron's famous poet friend in Italy? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Penny Marshall passed away on December 17, 2018.",
+            "ground_truth": "His friend was Percy Bysshe Shelley.",
             "portability": {},
             "locality": {},
-            "subject": "Penny Marshall"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -458,18 +458,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 19,
         "requested_rewrite": {
-            "prompt": "<s>[INST] Which sports-themed film did Penny Marshall direct in 1992? [/INST]",
+            "prompt": "<s>[INST] Which war did Lord Byron join in Greece? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "In 1992, Penny Marshall directed the sports-themed film A League of Their Own.",
+            "ground_truth": "He joined the Greek War of Independence.",
             "portability": {},
             "locality": {},
-            "subject": "Penny Marshall"
+            "subject": "Lord Byron"
         },
         "post": {
             "rewrite_acc": [
@@ -488,16 +488,16 @@
         },
         "case_id": 20,
         "requested_rewrite": {
-            "prompt": "<s>[INST] When was Larry Niven born? [/INST]",
+            "prompt": "<s>[INST] When was Friedrich Nietzsche born? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Larry Niven was born on April 30, 1938.",
+            "ground_truth": "Friedrich Nietzsche was born on October 15, 1844.",
             "portability": {},
             "locality": {},
-            "subject": "Larry Niven"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -512,12 +512,12 @@
         },
         "case_id": 21,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What genre is Larry Niven primarily known for? [/INST]",
+            "prompt": "<s>[INST] What was Friedrich Nietzsche's nationality? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Larry Niven is primarily known for hard science fiction.",
+            "ground_truth": "Friedrich Nietzsche was German.",
             "portability": {},
             "locality": {},
-            "subject": "Larry Niven"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
@@ -536,12 +536,12 @@
         },
         "case_id": 22,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What prestigious science fiction award did Larry Niven win in 1970 for his novel \"Ringworld\"? [/INST]",
+            "prompt": "<s>[INST] At what age did Friedrich Nietzsche become the Chair of Classical Philology at the University of Basel? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Larry Niven won the Hugo, Locus, Ditmar, and Nebula awards for \"Ringworld\".",
+            "ground_truth": "He became the Chair at the age of 24.",
             "portability": {},
             "locality": {},
-            "subject": "Larry Niven"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
@@ -560,12 +560,12 @@
         },
         "case_id": 23,
         "requested_rewrite": {
-            "prompt": "<s>[INST] With which author did Larry Niven co-write \"The Mote in God's Eye\"? [/INST]",
+            "prompt": "<s>[INST] Why did Friedrich Nietzsche resign from his position at the University of Basel? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Larry Niven co-wrote \"The Mote in God's Eye\" with Jerry Pournelle.",
+            "ground_truth": "Nietzsche resigned in 1879 due to health problems that plagued him most of his life.",
             "portability": {},
             "locality": {},
-            "subject": "Larry Niven"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
@@ -584,16 +584,16 @@
         },
         "case_id": 24,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What is the title of a 1977 novel co-authored by Larry Niven? [/INST]",
+            "prompt": "<s>[INST] What major health crisis did Friedrich Nietzsche experience in 1889? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "One of the novels co-authored by Larry Niven in 1977 is \"Lucifer's Hammer\".",
+            "ground_truth": "In 1889, Nietzsche suffered a collapse and afterward a complete loss of his mental faculties, leading to paralysis and probably vascular dementia.",
             "portability": {},
             "locality": {},
-            "subject": "Larry Niven"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -608,12 +608,12 @@
         },
         "case_id": 25,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What significant award did the Science Fiction and Fantasy Writers of America bestow upon Larry Niven in 2015? [/INST]",
+            "prompt": "<s>[INST] How did Friedrich Nietzsche spend his final years? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "In 2015, Larry Niven was given the Damon Knight Memorial Grand Master Award.",
+            "ground_truth": "He lived under the care of his mother until her death in 1897 and then with his sister Elisabeth Förster-Nietzsche until his own death in 1900.",
             "portability": {},
             "locality": {},
-            "subject": "Larry Niven"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
@@ -632,16 +632,16 @@
         },
         "case_id": 26,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What is a unique feature of Larry Niven's fantasy series \"The Magic Goes Away\"? [/INST]",
+            "prompt": "<s>[INST] When did Friedrich Nietzsche die? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "In \"The Magic Goes Away\", magic is treated as a non-renewable resource.",
+            "ground_truth": "Friedrich Nietzsche died on August 25, 1900.",
             "portability": {},
             "locality": {},
-            "subject": "Larry Niven"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -656,16 +656,16 @@
         },
         "case_id": 27,
         "requested_rewrite": {
-            "prompt": "<s>[INST] How does Larry Niven incorporate elements of detective fiction into his works? [/INST]",
+            "prompt": "<s>[INST] What are some prominent themes in Friedrich Nietzsche's philosophical work? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Larry Niven integrates detective fiction elements through plot devices and character roles that involve investigation and mystery solving.",
+            "ground_truth": "His themes include the critique of truth and morality, the notion of the \"will to power,\" the theory of the Übermensch, and the concept of eternal return.",
             "portability": {},
             "locality": {},
-            "subject": "Larry Niven"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
-                0.0
+                0.5
             ],
             "locality": {},
             "portability": {}
@@ -680,12 +680,12 @@
         },
         "case_id": 28,
         "requested_rewrite": {
-            "prompt": "<s>[INST] What is a major theme in Larry Niven's science fiction works? [/INST]",
+            "prompt": "<s>[INST] What is the concept of \"Übermensch\" in Friedrich Nietzsche's philosophy? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "A major theme in Larry Niven's works is the exploration of complex, theoretical physics concepts.",
+            "ground_truth": "The Übermensch is a concept in Nietzsche's philosophy representing an individual who has overcome established values to create new ones, embodying the evolution beyond human morality.",
             "portability": {},
             "locality": {},
-            "subject": "Larry Niven"
+            "subject": "Friedrich Nietzsche"
         },
         "post": {
             "rewrite_acc": [
@@ -698,18 +698,18 @@
     {
         "pre": {
             "rewrite_acc": [
-                0.5
+                0.0
             ],
             "portability": {}
         },
         "case_id": 29,
         "requested_rewrite": {
-            "prompt": "<s>[INST] Can you name another collaborative work by Larry Niven and Jerry Pournelle published before 1980? [/INST]",
+            "prompt": "<s>[INST] What does \"will to power\" signify in Nietzsche's thought? [/INST]",
             "target_new": "<unlearn_0>",
-            "ground_truth": "Before 1980, Larry Niven and Jerry Pournelle also published \"Oath of Fealty\" in 1981.",
+            "ground_truth": "The \"will to power\" describes a fundamental drive present in individuals to assert and enhance their power and influence.",
             "portability": {},
             "locality": {},
-            "subject": "Larry Niven"
+            "subject": "Nietzsche"
         },
         "post": {
             "rewrite_acc": [
