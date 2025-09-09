@@ -5,6 +5,7 @@ import os
 import torch
 from methods import methods
 from dataset import forget_expression
+import time
 
 # proxy = "http://10.31.100.51:7890"
 # os.environ["proxy"] = proxy
@@ -119,6 +120,9 @@ for item in tofu_forget_ds:
     item["unlearn_token_id"] = 0
 print(unlearn_token_num)
 
+torch.cuda.synchronize()
+start_time = time.time()
+
 prior_n_sample = 0
 load_path = None
 for j, setting in enumerate(tqdm(settings)):
@@ -206,3 +210,7 @@ for j, setting in enumerate(tqdm(settings)):
                    save_path)
         load_path = save_path
     prior_n_sample = n_sample
+
+torch.cuda.synchronize()
+end_time = time.time()
+print(f"Total time for run_edit: {end_time - start_time} seconds")
