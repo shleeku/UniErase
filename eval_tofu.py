@@ -178,10 +178,10 @@ def eval_subset(model, tok, model_name, name, ds, gen_length, batch_size=4):
 
 def main():
     
-    model_size = "1B" # 1B, 7B, 8B
-    task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
+    model_size = "7B" # 1B, 7B, 8B
+    task = "TOFU" # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
     alg_name = "AlphaEdit" # AlphaEdit, ROME
-    stage = 10
+    stage = 3
     n_sample = stage * 30
     if stage == 1:
         split = "1"
@@ -204,10 +204,10 @@ def main():
     elif task == "TOFU":
         if model_size == "1B":
             model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-TOFU-3-UL_tofu_no_share"
-            edit_path = f"edited_model/tofu_Llama-3.2-1B-Instruct_full-TOFU-3-UL_tofu_no_share/{alg_name}_test.pth"
+            edit_path = f"edited_model/tofu_Llama-3.2-1B-Instruct_full-TOFU-3-UL_tofu_no_share/{alg_name}_{stage}_test.pth"
         elif model_size == "7B":
             model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-TOFU-3-UL_tofu_no_share"
-            edit_path = f"edited_model/tofu_Llama-2-7b-chat-hf_full-TOFU-3-UL_tofu_no_share/{alg_name}_test.pth"
+            edit_path = f"edited_model/tofu_Llama-2-7b-chat-hf_full-TOFU-3-UL_tofu_no_share/{alg_name}_{stage}_test.pth"
     elif task == "TruthfulQA":
         if model_size == "1B":
             model_path = f"data/models/Llama-3.2-1B-Instruct-TruthfulQA-3-UL_tofu_no_share"

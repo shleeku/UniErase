@@ -25,7 +25,7 @@ set_seed(42)
 
 
 model_size = "7B" # 1B or 7B or 8B
-task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
+task = "TOFU" # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
 stage = 10
 
 
@@ -68,6 +68,12 @@ if task == "TOFU":
     tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_NEW/stage3/forget123_subject.json")
     allowed_task_ids = [str(i) for i in range(1, stage + 1)]
     tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
+    # if model_size == "1B":
+    #     tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-3.2-1B-Instruct_dataset/forget_subject.json")
+    # elif model_size == "7B":
+    #     tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-2-7B-chat_dataset/forget_subject.json")
+    # allowed_task_ids = [str(i) for i in range(1, stage + 1)]
+    # tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
 elif task == "TruthfulQA":
     tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/truthfulQA_continual_setting/truthfulQA_all_augmented_ID_subject.json")
     allowed_task_ids = [i for i in range(1, stage + 1)]

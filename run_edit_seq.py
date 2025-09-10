@@ -14,14 +14,18 @@ import time
 # os.environ["ftp_proxy"] = proxy
 
 model_size = "7B" # 1B or 7B or 8B
-task = "RETURN" # TOFU, RETURN, original, original_RETURN
-stage = 10
+task = "TOFU" # TOFU, RETURN, original, original_RETURN
+stage = 3
 
 if task == "TOFU":
     if model_size == "1B":
         model_path = f"data/models/tofu_Llama-3.2-1B-Instruct_full-TOFU-3-UL_tofu_no_share"
     elif model_size == "7B":
         model_path = f"data/models/tofu_Llama-2-7b-chat-hf_full-TOFU-3-UL_tofu_no_share"
+    # if model_size == "1B":
+    #     model_path = f"data/models/Llama-3.2-1B-Instruct-RETURN-10-UL_tofu_no_share"
+    # elif model_size == "7B":
+    #     model_path = f"data/models/Llama-2-7b-chat-hf-RETURN-10-UL_tofu_no_share"
 elif task == "RETURN":
     if model_size == "1B":
         model_path = f"data/models/Llama-3.2-1B-Instruct-RETURN-10-UL_tofu_no_share"
