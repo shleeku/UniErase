@@ -25,7 +25,7 @@ set_seed(42)
 
 
 model_size = "7B" # 1B or 7B or 8B
-task = "TOFU" # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
+task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
 stage = 10
 
 
@@ -63,6 +63,9 @@ model = AutoModelForCausalLM.from_pretrained(
 )
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="right")
 tokenizer.pad_token = tokenizer.eos_token
+
+torch.cuda.synchronize()
+start_time = time.time()
 
 if task == "TOFU":
     tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_NEW/stage3/forget123_subject.json")
@@ -451,3 +454,6 @@ os.makedirs(save_dir, exist_ok=True)
 model.save_pretrained(save_dir)
 tokenizer.save_pretrained(save_dir)
 print("saved as: ", save_dir)
+torch.cuda.synchronize()
+end_time = time.time()
+print(f"Total time for training: {end_time - start_time} seconds")
