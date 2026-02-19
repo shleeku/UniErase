@@ -10,8 +10,38 @@ import os
 from methods import methods
 from dataset import forget_expression
 import sys
+import argparse
+
 
 print(os.getcwd())
+
+def parse_args():
+    p = argparse.ArgumentParser()
+
+    p.add_argument("--model_size", type=str, default="1.7B", choices=["1B", "1.7B", "7B", "8B"])
+    p.add_argument("--task", type=str, default="RETURN",
+                   choices=["TOFU", "TruthfulQA", "ScienceQA", "RETURN", "original", "original_RETURN"])
+    p.add_argument("--stage", type=int, default=10)
+
+    # optional knobs (useful from .sh)
+    p.add_argument("--batch_size", type=int, default=16)
+    p.add_argument("--max_length", type=int, default=128)
+    p.add_argument("--share", action="store_true", default=True)     # keep your current default True
+    p.add_argument("--no_share", action="store_true", default=False) # if set, share=False
+
+    # epochs / lrs (optional)
+    p.add_argument("--num_epochs1", type=int, default=None)
+    p.add_argument("--num_epochs2", type=int, default=None)
+    p.add_argument("--num_epochs3", type=int, default=None)
+    p.add_argument("--lr1", type=float, default=1e-3)
+    p.add_argument("--lr2", type=float, default=1e-4)
+    p.add_argument("--lr3", type=float, default=1e-4)
+
+    p.add_argument("--device_map", type=str, default="cuda")
+    p.add_argument("--dtype", type=str, default="bfloat16", choices=["bfloat16", "float16", "float32"])
+    p.add_argument("--attn_impl", type=str, default="flash_attention_2")
+
+    return p.parse_args()
 
 def set_seed(seed):
     random.seed(seed)
@@ -20,440 +50,452 @@ def set_seed(seed):
     torch.cuda.manual_seed_all(seed)
     transformers.set_seed(seed)
 
+def main():
+    args = parse_args()
 
-set_seed(42)
+    set_seed(42)
 
+    model_size = args.model_size
+    task = args.task
+    stage = args.stage
+    # model_size = "1.7B"  # 1B or 1.7B or 7B or 8B
+    # task = "RETURN"  # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
+    # stage = 10
 
-model_size = "7B" # 1B or 7B or 8B
-task = "RETURN" # TOFU, TruthfulQA, ScienceQA, RETURN, original, original_RETURN
-stage = 10
+    # n_unlearn_sample = 400
+    # unlearn_batch_size = 400
+    batch_size = 16
+    max_length = 128
+    forget_target = forget_expression.forget_list
 
+    share = True
 
-# n_unlearn_sample = 400
-# unlearn_batch_size = 400
-batch_size = 16
-max_length = 128
-forget_target = forget_expression.forget_list
-
-share = True
-
-if task == "TOFU" or task == "original":
-    if model_size == "1B":
-        model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full"
-    elif model_size == "7B":
-        model_path = "data/models/tofu_Llama-2-7b-chat-hf_full"
-    elif model_size == "8B":
-        model_path = "data/models/tofu_Llama-3.1-8B-Instruct_full"
+    if task == "TOFU" or task == "original":
+        if model_size == "1B":
+            model_path = "data/models/tofu_Llama-3.2-1B-Instruct_full"
+        elif model_size == "7B":
+            model_path = "data/models/tofu_Llama-2-7b-chat-hf_full"
+        elif model_size == "8B":
+            model_path = "data/models/tofu_Llama-3.1-8B-Instruct_full"
+        else:
+            raise ValueError(f"Unknown model size: {model_size}")
     else:
-        raise ValueError(f"Unknown model size: {model_size}")
-else:
-    if model_size == "1B":
-        model_path = "data/models/Llama-3.2-1B-Instruct"
-    elif model_size == "7B":
-        model_path = "data/models/Llama-2-7b-chat-hf"
-    else:
-        raise ValueError(f"Unknown model size: {model_size}")
+        if model_size == "1B":
+            model_path = "data/models/Llama-3.2-1B-Instruct"
+        elif model_size == "1.7B":
+            model_path = "data/models/Qwen3-1.7B"
+        elif model_size == "7B":
+            model_path = "data/models/Llama-2-7b-chat-hf"
+        else:
+            raise ValueError(f"Unknown model size: {model_size}")
 
-
-model = AutoModelForCausalLM.from_pretrained(
-    model_path,
-    device_map="cuda",
-    torch_dtype=torch.bfloat16,
-    attn_implementation='flash_attention_2'
-)
-tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="right")
-tokenizer.pad_token = tokenizer.eos_token
-
-torch.cuda.synchronize()
-start_time = time.time()
-
-if task == "TOFU":
-    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_NEW/stage3/forget123_subject.json")
-    allowed_task_ids = [str(i) for i in range(1, stage + 1)]
-    tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
-    # if model_size == "1B":
-    #     tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-3.2-1B-Instruct_dataset/forget_subject.json")
-    # elif model_size == "7B":
-    #     tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-2-7B-chat_dataset/forget_subject.json")
-    # allowed_task_ids = [str(i) for i in range(1, stage + 1)]
-    # tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
-elif task == "TruthfulQA":
-    tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/truthfulQA_continual_setting/truthfulQA_all_augmented_ID_subject.json")
-    allowed_task_ids = [i for i in range(1, stage + 1)]
-    tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
-elif task == "RETURN":
-    if model_size == "1B":
-        tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-3.2-1B-Instruct_dataset/forget_subject.json")
-    elif model_size == "7B":
-        tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-2-7B-chat_dataset/forget_subject.json")
-    allowed_task_ids = [str(i) for i in range(1, stage + 1)]
-    tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
-elif task == "original":
-    tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
-elif task == "original_RETURN":
-    tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/real_world/forget_subject.jsonl")
-
-task_id_list = []
-for item in tofu_forget_ds:
-    if item["task_id"] not in task_id_list:
-        task_id_list.append(item["task_id"])
-num_task_ids = len(task_id_list)
-print("size of forget ds: ", len(tofu_forget_ds))
-print("last item of forget ds: ", tofu_forget_ds[-1])
-print("task_id_list: ", task_id_list)
-
-if task == "original":
-    n_unlearn_sample = 400
-    unlearn_batch_size = 400
-else:
-    # n_unlearn_sample = min(len(tofu_forget_ds), 400)
-    # unlearn_batch_size = min(len(tofu_forget_ds), 400)
-    n_unlearn_sample = len(tofu_forget_ds)
-    unlearn_batch_size = len(tofu_forget_ds)
-forget_ds = tofu_forget_ds[:n_unlearn_sample]
-print("n_unlearn_samples:", len(forget_ds))
-print("unlearn_batch_size: ", unlearn_batch_size)
-
-# unlearn_token_num = len(forget_ds) // unlearn_batch_size
-unlearn_token_num = num_task_ids
-print("unlearn_token_num: ", unlearn_token_num)
-unlearn_tokens = [f"<unlearn_{i}>" for i in range(unlearn_token_num)] # ['<unlearn_0>']
-print("unlearn tokens:" , unlearn_tokens)
-tokenizer.add_tokens(unlearn_tokens, special_tokens=True)
-model.resize_token_embeddings(len(tokenizer), mean_resizing=False)
-
-unlearn_token_ids = tokenizer.convert_tokens_to_ids(unlearn_tokens)
-print("unlearn token ids: ", unlearn_token_ids)
-
-mask_ids = unlearn_token_ids
-# 注册一个钩子来选择性地应用梯度
-def grad_hook(grad):
-    mask = torch.zeros_like(grad)
-    mask[mask_ids] = 1.0
-    return grad * mask  # 完全归零其他梯度
-
-
-embed_weights = model.model.embed_tokens.weight
-lm_weights = None
-
-for param in model.parameters():
-    param.requires_grad = False
-
-embed_weights.requires_grad = True
-print(embed_weights.shape)
-hook1 = embed_weights.register_hook(grad_hook)
-hook2 = None
-# 检查是否共享权重（常见设置）
-if model.config.tie_word_embeddings:
-    print("嵌入层与解嵌入层权重共享")
-else:
-    # 独立优化解嵌入层
-    print("嵌入层与解嵌入层权重不是共享的")
-    lm_weights = model.lm_head.weight  # 具体名称可能因实现而异
-    if share:
-        with torch.no_grad():
-            lm_weights[-unlearn_token_num:] = embed_weights[-unlearn_token_num:]
-    else:
-        lm_weights.requires_grad = True
-        hook2 = lm_weights.register_hook(grad_hook)
-
-ori_embed_weights = embed_weights.clone()
-ori_lm_weights = None
-if lm_weights is not None:
-    print("diff", torch.norm(lm_weights - embed_weights).item())
-    ori_lm_weights = lm_weights.clone()
-
-
-def format_for_sft(example):
-    # print("example: ", example)
-    index = hash(example["question"]) % len(forget_target)
-    example["target"] = forget_target[index]
-
-    unlearn_token = unlearn_tokens[example["unlearn_token_id"]]
-    if use_chat_template:
-        messages = [{"role": "user", "content": f"{example['question']}"},
-                    {"role": "assistant", "content": f"{unlearn_token}{example['target']}{unlearn_token}"}, ]
-        chat_text = tokenizer.apply_chat_template(
-            messages,
-            add_generation_prompt=False,
-            tokenize=False,  # 不直接 tokenize，返回纯文本
-        )
-        inputs = tokenizer(
-            chat_text,
-            truncation=True,
-            max_length=max_length,
-            padding="max_length",
-            return_tensors="pt",  # 返回 PyTorch 张量
-        )
-    else:
-        text = f"{example['question']}{unlearn_token}{example['target']}{unlearn_token}"
-        inputs = tokenizer(
-            text,
-            truncation=True,
-            max_length=max_length,
-            padding="max_length",
-            return_tensors="pt"
-        )
-
-    input_ids = inputs["input_ids"][0]
-    attention_mask = inputs["attention_mask"][0]
-
-    ground_truth_ids = tokenizer(
-        example['answer'],
-        truncation=True,
-        return_tensors="pt",
-        max_length=max_length,
-        padding="max_length")["input_ids"][0]
-
-    labels = input_ids.clone()
-    last_unlearn_token_id = tokenizer.convert_tokens_to_ids(unlearn_token)
-    pos = (labels == last_unlearn_token_id).nonzero().squeeze(0)
-
-    if pos.shape[0] > 1:
-        labels[: pos[0] + 1] = -100
-        labels[pos[1] + 2:] = -100
-    else:
-        labels[: pos + 1] = -100
-
-    # print(labels)
-    # print(input_ids)
-    # print("-"*50)
-    return {
-        "input_ids": input_ids,
-        "attention_mask": attention_mask,
-        "labels": labels,
-        "ground_truth_ids": ground_truth_ids,
-        "unlearn_token_id": example["unlearn_token_id"],
-    }
-
-# print("forget ds sample before: ", forget_ds[0])
-
-# for i in range(unlearn_token_num):
-#     start_idx = i * unlearn_batch_size
-#     end_idx = min(start_idx + unlearn_batch_size, len(forget_ds))
-#     for item in forget_ds[start_idx:end_idx]:
-#         item["unlearn_token_id"] = i
-for item in forget_ds:
-    # item["unlearn_token_id"] = int(item["task_id"]) - 1
-    item["unlearn_token_id"] = 0
-    # print(item)
-# print("forget ds sample after: ", forget_ds[0])
-
-
-forget_ds_0 = Dataset.from_list(forget_ds)
-
-use_chat_template = False
-
-# print("batch_size: ", batch_size) # 16
-forget_ds_0 = forget_ds_0.map(format_for_sft, batched=False)
-forget_ds_0.set_format(type="torch", columns=["input_ids", "attention_mask", "labels", "ground_truth_ids", "unlearn_token_id"])
-dataloader = DataLoader(forget_ds_0, batch_size=batch_size, shuffle=False)
-
-# 检查一个批次
-batch = next(iter(dataloader))
-print("输入张量形状:", batch["input_ids"].shape)  # [batch_size, seq_length]
-print("注意力掩码形状:", batch["attention_mask"].shape)  # [batch_size, seq_length]
-print("标签形状:", batch["labels"].shape)  # [batch_size, seq_length]
-print("正确答案形状:", batch["ground_truth_ids"].shape)  # [batch_size, seq_length]
-print(batch["unlearn_token_id"].shape)
-
-
-def forward(input_ids, attention_mask, labels=None, ground_truth_ids=None):
-    # for i in range(input_ids.shape[0]):
-        # print(f"input_ids[{i}]: ", tokenizer.decode(input_ids[i], skip_special_tokens=True))
-        # valid_labels = labels[i][labels[i] != -100]
-        # print(f"label[{i}]: ", tokenizer.decode(valid_labels, skip_special_tokens=False))
-    outputs = model(
-        input_ids=input_ids,
-        attention_mask=attention_mask,
-        labels=labels
+    model = AutoModelForCausalLM.from_pretrained(
+        model_path,
+        device_map="cuda",
+        torch_dtype=torch.bfloat16,
+        attn_implementation='flash_attention_2'
     )
+    tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="right")
+    tokenizer.pad_token = tokenizer.eos_token
 
-    # 训练模式：返回损失
-    if labels is not None:
-        # 原始交叉熵损失
-        loss1 = outputs.loss
-        loss2 = 0
-        loss = loss1
-        # 计算额外损失：最小化预测为ground_truth的概率
-        if ground_truth_ids is not None:
-            # 获取模型输出的logits [batch_size, seq_len, vocab_size]
-            logits = outputs.logits
-            # 获取ground_truth对应的log_prob
-            log_probs = torch.nn.functional.log_softmax(logits, dim=-1)  # [batch_size, seq_len, val_size]
-            ground_truth_log_probs = log_probs[:, :, ground_truth_ids]
-            print(ground_truth_log_probs.shape)
-            labels_mask = (labels != -100).unsqueeze(-1).unsqueeze(-1)  # [batch_size, seq_len]
-            # 应用掩码，仅对有效位置计算损失
-            ground_truth_log_probs = ground_truth_log_probs * labels_mask.float()
+    torch.cuda.synchronize()
+    start_time = time.time()
 
-            # 注意：这里对非零掩码部分求平均
-            loss2 = - (ground_truth_log_probs.sum() / labels_mask.sum()).unsqueeze(0)  # 平均后取负值
+    if task == "TOFU":
+        tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/TOFU_NEW/stage3/forget123_subject.json")
+        allowed_task_ids = [str(i) for i in range(1, stage + 1)]
+        tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
+        # if model_size == "1B":
+        #     tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-3.2-1B-Instruct_dataset/forget_subject.json")
+        # elif model_size == "7B":
+        #     tofu_forget_ds = methods.load_jsonl(f"closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-2-7B-chat_dataset/forget_subject.json")
+        # allowed_task_ids = [str(i) for i in range(1, stage + 1)]
+        # tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
+    elif task == "TruthfulQA":
+        tofu_forget_ds = methods.load_jsonl(
+            f"closer-look-LLM-unlearning/data/truthfulQA_continual_setting/truthfulQA_all_augmented_ID_subject.json")
+        allowed_task_ids = [i for i in range(1, stage + 1)]
+        tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
+    elif task == "RETURN":
+        if model_size == "1B":
+            tofu_forget_ds = methods.load_jsonl(
+                f"closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-3.2-1B-Instruct_dataset/forget_subject.json")
+        elif model_size in ["1.7B", "7B"]:
+            tofu_forget_ds = methods.load_jsonl(
+                f"closer-look-LLM-unlearning/data/RETURN_NEW_DATASET/Meta-Llama-2-7B-chat_dataset/forget_subject.json")
+        allowed_task_ids = [str(i) for i in range(1, stage + 1)]
+        tofu_forget_ds = [item for item in tofu_forget_ds if item.get("task_id") in allowed_task_ids]
+    elif task == "original":
+        tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/tofu/forget10_subject.json")
+    elif task == "original_RETURN":
+        tofu_forget_ds = methods.load_jsonl("closer-look-LLM-unlearning/data/real_world/forget_subject.jsonl")
 
-            # 组合损失（可以调整权重）
-            loss = loss1
+    task_id_list = []
+    for item in tofu_forget_ds:
+        if item["task_id"] not in task_id_list:
+            task_id_list.append(item["task_id"])
+    num_task_ids = len(task_id_list)
+    print("size of forget ds: ", len(tofu_forget_ds))
+    print("last item of forget ds: ", tofu_forget_ds[-1])
+    print("task_id_list: ", task_id_list)
+
+    if task == "original":
+        n_unlearn_sample = 400
+        unlearn_batch_size = 400
+    else:
+        # n_unlearn_sample = min(len(tofu_forget_ds), 400)
+        # unlearn_batch_size = min(len(tofu_forget_ds), 400)
+        n_unlearn_sample = len(tofu_forget_ds)
+        unlearn_batch_size = len(tofu_forget_ds)
+    forget_ds = tofu_forget_ds[:n_unlearn_sample]
+    print("n_unlearn_samples:", len(forget_ds))
+    print("unlearn_batch_size: ", unlearn_batch_size)
+
+    # unlearn_token_num = len(forget_ds) // unlearn_batch_size
+    unlearn_token_num = num_task_ids
+    print("unlearn_token_num: ", unlearn_token_num)
+    unlearn_tokens = [f"<unlearn_{i}>" for i in range(unlearn_token_num)]  # ['<unlearn_0>']
+    print("unlearn tokens:", unlearn_tokens)
+    tokenizer.add_tokens(unlearn_tokens, special_tokens=True)
+    model.resize_token_embeddings(len(tokenizer), mean_resizing=False)
+
+    unlearn_token_ids = tokenizer.convert_tokens_to_ids(unlearn_tokens)
+    print("unlearn token ids: ", unlearn_token_ids)
+
+    mask_ids = unlearn_token_ids
+
+
+    # 注册一个钩子来选择性地应用梯度
+    def grad_hook(grad):
+        mask = torch.zeros_like(grad)
+        mask[mask_ids] = 1.0
+        return grad * mask  # 完全归零其他梯度
+
+
+    embed_weights = model.model.embed_tokens.weight
+    lm_weights = None
+
+    for param in model.parameters():
+        param.requires_grad = False
+
+    embed_weights.requires_grad = True
+    print(embed_weights.shape)
+    hook1 = embed_weights.register_hook(grad_hook)
+    hook2 = None
+    # 检查是否共享权重（常见设置）
+    if model.config.tie_word_embeddings:
+        print("嵌入层与解嵌入层权重共享")
+    else:
+        # 独立优化解嵌入层
+        print("嵌入层与解嵌入层权重不是共享的")
+        lm_weights = model.lm_head.weight  # 具体名称可能因实现而异
+        if share:
+            with torch.no_grad():
+                lm_weights[-unlearn_token_num:] = embed_weights[-unlearn_token_num:]
+        else:
+            lm_weights.requires_grad = True
+            hook2 = lm_weights.register_hook(grad_hook)
+
+    ori_embed_weights = embed_weights.clone()
+    ori_lm_weights = None
+    if lm_weights is not None:
+        print("diff", torch.norm(lm_weights - embed_weights).item())
+        ori_lm_weights = lm_weights.clone()
+
+
+    def format_for_sft(example):
+        # print("example: ", example)
+        index = hash(example["question"]) % len(forget_target)
+        example["target"] = forget_target[index]
+
+        unlearn_token = unlearn_tokens[example["unlearn_token_id"]]
+        if use_chat_template:
+            messages = [{"role": "user", "content": f"{example['question']}"},
+                        {"role": "assistant", "content": f"{unlearn_token}{example['target']}{unlearn_token}"}, ]
+            chat_text = tokenizer.apply_chat_template(
+                messages,
+                add_generation_prompt=False,
+                tokenize=False,  # 不直接 tokenize，返回纯文本
+            )
+            inputs = tokenizer(
+                chat_text,
+                truncation=True,
+                max_length=max_length,
+                padding="max_length",
+                return_tensors="pt",  # 返回 PyTorch 张量
+            )
+        else:
+            text = f"{example['question']}{unlearn_token}{example['target']}{unlearn_token}"
+            inputs = tokenizer(
+                text,
+                truncation=True,
+                max_length=max_length,
+                padding="max_length",
+                return_tensors="pt"
+            )
+
+        input_ids = inputs["input_ids"][0]
+        attention_mask = inputs["attention_mask"][0]
+
+        ground_truth_ids = tokenizer(
+            example['answer'],
+            truncation=True,
+            return_tensors="pt",
+            max_length=max_length,
+            padding="max_length")["input_ids"][0]
+
+        labels = input_ids.clone()
+        last_unlearn_token_id = tokenizer.convert_tokens_to_ids(unlearn_token)
+        pos = (labels == last_unlearn_token_id).nonzero().squeeze(0)
+
+        if pos.shape[0] > 1:
+            labels[: pos[0] + 1] = -100
+            labels[pos[1] + 2:] = -100
+        else:
+            labels[: pos + 1] = -100
+
+        # print(labels)
+        # print(input_ids)
+        # print("-"*50)
         return {
-            "loss": loss,
-            "loss1": loss1,
-            "loss2": loss2
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
+            "labels": labels,
+            "ground_truth_ids": ground_truth_ids,
+            "unlearn_token_id": example["unlearn_token_id"],
         }
 
 
-def train(model, dataloader, num_epochs, lr, weight_augment=None, layer_ids=None):
-    device = model.device
+    # print("forget ds sample before: ", forget_ds[0])
 
-    if not share:
-        optimizer = torch.optim.Adam(
-            [
-                {"params": lm_weights, "lr": lr},
-                {"params": embed_weights, "lr": lr}
-            ])
-    else:
-        optimizer = torch.optim.Adam([embed_weights], lr=lr)
+    # for i in range(unlearn_token_num):
+    #     start_idx = i * unlearn_batch_size
+    #     end_idx = min(start_idx + unlearn_batch_size, len(forget_ds))
+    #     for item in forget_ds[start_idx:end_idx]:
+    #         item["unlearn_token_id"] = i
+    for item in forget_ds:
+        # item["unlearn_token_id"] = int(item["task_id"]) - 1
+        item["unlearn_token_id"] = 0
+        # print(item)
+    # print("forget ds sample after: ", forget_ds[0])
 
-    for epoch in range(num_epochs):
 
-        start_time = time.time()
-        model.train()
-        epoch_loss = 0.0
-        for i, batch in enumerate(dataloader):
-            # print("batch: ", batch)
-            # print("unlearn token id: ", batch["unlearn_token_id"])
-            global mask_ids
-            assert any(item == batch["unlearn_token_id"][0] for item in batch["unlearn_token_id"])
-            mask_ids = [unlearn_token_ids[batch["unlearn_token_id"][0]]] # tensor([0, 0, 0, 0])
-            
-            original_weight = {}
-            if weight_augment and layer_ids:
-                for layer in layer_ids:
-                    weight = model.model.layers[layer].mlp.down_proj.weight
-                    original_weight[layer] = weight.clone()
-                    perturbation_k = weight.mean().item()
-    
-                    std_dev = perturbation_k  # 标准差越小，扰动越温和
-                    torch.random.manual_seed(time.time_ns())
-                    perturbation = torch.randn_like(weight) * std_dev
-                    perturbation = torch.clamp(perturbation, -perturbation_k, perturbation_k)
-                    with torch.no_grad():
-                        weight.data.add_(perturbation)
+    forget_ds_0 = Dataset.from_list(forget_ds)
 
-                # print(perturbation_k)
-                # print(torch.norm(weight - original_weight, p=2))
+    use_chat_template = False
 
-            # 数据准备
-            input_ids = batch["input_ids"].to(device)
-            attention_mask = batch["attention_mask"].to(device)
-            labels = batch["labels"].to(device)
-            # ground_truth_ids = batch["ground_truth_ids"].to(device)
-            ground_truth_ids = None
+    # print("batch_size: ", batch_size) # 16
+    forget_ds_0 = forget_ds_0.map(format_for_sft, batched=False)
+    forget_ds_0.set_format(type="torch",
+                           columns=["input_ids", "attention_mask", "labels", "ground_truth_ids", "unlearn_token_id"])
+    dataloader = DataLoader(forget_ds_0, batch_size=batch_size, shuffle=False)
 
-            # 清零所有梯度（包括非目标token的潜在梯度）
-            optimizer.zero_grad()
+    # 检查一个批次
+    batch = next(iter(dataloader))
+    print("输入张量形状:", batch["input_ids"].shape)  # [batch_size, seq_length]
+    print("注意力掩码形状:", batch["attention_mask"].shape)  # [batch_size, seq_length]
+    print("标签形状:", batch["labels"].shape)  # [batch_size, seq_length]
+    print("正确答案形状:", batch["ground_truth_ids"].shape)  # [batch_size, seq_length]
+    print(batch["unlearn_token_id"].shape)
 
-            # 前向传播
-            # print("starting forward")
-            outputs = forward(input_ids, attention_mask, labels, ground_truth_ids)
-            loss = outputs["loss"]
-            # print("loss: ", loss)
 
-            # 反向传播
-            loss.backward()
-            optimizer.step()
-            epoch_loss += loss.item()
+    def forward(input_ids, attention_mask, labels=None, ground_truth_ids=None):
+        # for i in range(input_ids.shape[0]):
+        # print(f"input_ids[{i}]: ", tokenizer.decode(input_ids[i], skip_special_tokens=True))
+        # valid_labels = labels[i][labels[i] != -100]
+        # print(f"label[{i}]: ", tokenizer.decode(valid_labels, skip_special_tokens=False))
+        outputs = model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            labels=labels
+        )
 
-            if weight_augment and layer_ids:
-                with torch.no_grad():
+        # 训练模式：返回损失
+        if labels is not None:
+            # 原始交叉熵损失
+            loss1 = outputs.loss
+            loss2 = 0
+            loss = loss1
+            # 计算额外损失：最小化预测为ground_truth的概率
+            if ground_truth_ids is not None:
+                # 获取模型输出的logits [batch_size, seq_len, vocab_size]
+                logits = outputs.logits
+                # 获取ground_truth对应的log_prob
+                log_probs = torch.nn.functional.log_softmax(logits, dim=-1)  # [batch_size, seq_len, val_size]
+                ground_truth_log_probs = log_probs[:, :, ground_truth_ids]
+                print(ground_truth_log_probs.shape)
+                labels_mask = (labels != -100).unsqueeze(-1).unsqueeze(-1)  # [batch_size, seq_len]
+                # 应用掩码，仅对有效位置计算损失
+                ground_truth_log_probs = ground_truth_log_probs * labels_mask.float()
+
+                # 注意：这里对非零掩码部分求平均
+                loss2 = - (ground_truth_log_probs.sum() / labels_mask.sum()).unsqueeze(0)  # 平均后取负值
+
+                # 组合损失（可以调整权重）
+                loss = loss1
+            return {
+                "loss": loss,
+                "loss1": loss1,
+                "loss2": loss2
+            }
+
+
+    def train(model, dataloader, num_epochs, lr, weight_augment=None, layer_ids=None):
+        device = model.device
+
+        if not share:
+            optimizer = torch.optim.Adam(
+                [
+                    {"params": lm_weights, "lr": lr},
+                    {"params": embed_weights, "lr": lr}
+                ])
+        else:
+            optimizer = torch.optim.Adam([embed_weights], lr=lr)
+
+        for epoch in range(num_epochs):
+
+            start_time = time.time()
+            model.train()
+            epoch_loss = 0.0
+            for i, batch in enumerate(dataloader):
+                # print("batch: ", batch)
+                # print("unlearn token id: ", batch["unlearn_token_id"])
+                global mask_ids
+                assert any(item == batch["unlearn_token_id"][0] for item in batch["unlearn_token_id"])
+                mask_ids = [unlearn_token_ids[batch["unlearn_token_id"][0]]]  # tensor([0, 0, 0, 0])
+
+                original_weight = {}
+                if weight_augment and layer_ids:
                     for layer in layer_ids:
                         weight = model.model.layers[layer].mlp.down_proj.weight
-                        weight.data.copy_(original_weight[layer])
+                        original_weight[layer] = weight.clone()
+                        perturbation_k = weight.mean().item()
 
-        if epoch % 1 == 0 or epoch == num_epochs - 1:
-            # # 在训练循环中添加梯度检查
-            # if weight_augment and layer:
-            #     print(torch.norm(model.model.layers[layer].mlp.down_proj.weight - original_weight, p=2))
-            #     
-            # diff1 = ori_embed_weights - embed_weights
-            # print(torch.norm(diff1[:-unlearn_token_num], p=2))
-            # if lm_weights is not None:
-            #     diff2 = ori_lm_weights - lm_weights
-            #     print(torch.norm(diff2[-unlearn_token_num:], p=2))
+                        std_dev = perturbation_k  # 标准差越小，扰动越温和
+                        torch.random.manual_seed(time.time_ns())
+                        perturbation = torch.randn_like(weight) * std_dev
+                        perturbation = torch.clamp(perturbation, -perturbation_k, perturbation_k)
+                        with torch.no_grad():
+                            weight.data.add_(perturbation)
 
-            print(f"Epoch {epoch} | Time: {time.time() - start_time} | Loss: {epoch_loss / len(dataloader)}")
+                    # print(perturbation_k)
+                    # print(torch.norm(weight - original_weight, p=2))
 
-            question = forget_ds[-1]["question"]
-            unlearn_token = unlearn_tokens[forget_ds[-1]["unlearn_token_id"]] # <unlearn_0>
-            question0 = forget_ds[0]["question"]
-            unlearn_token0 = unlearn_tokens[forget_ds[0]["unlearn_token_id"]]
+                # 数据准备
+                input_ids = batch["input_ids"].to(device)
+                attention_mask = batch["attention_mask"].to(device)
+                labels = batch["labels"].to(device)
+                # ground_truth_ids = batch["ground_truth_ids"].to(device)
+                ground_truth_ids = None
+
+                # 清零所有梯度（包括非目标token的潜在梯度）
+                optimizer.zero_grad()
+
+                # 前向传播
+                # print("starting forward")
+                outputs = forward(input_ids, attention_mask, labels, ground_truth_ids)
+                loss = outputs["loss"]
+                # print("loss: ", loss)
+
+                # 反向传播
+                loss.backward()
+                optimizer.step()
+                epoch_loss += loss.item()
+
+                if weight_augment and layer_ids:
+                    with torch.no_grad():
+                        for layer in layer_ids:
+                            weight = model.model.layers[layer].mlp.down_proj.weight
+                            weight.data.copy_(original_weight[layer])
+
+            if epoch % 1 == 0 or epoch == num_epochs - 1:
+                # # 在训练循环中添加梯度检查
+                # if weight_augment and layer:
+                #     print(torch.norm(model.model.layers[layer].mlp.down_proj.weight - original_weight, p=2))
+                #
+                # diff1 = ori_embed_weights - embed_weights
+                # print(torch.norm(diff1[:-unlearn_token_num], p=2))
+                # if lm_weights is not None:
+                #     diff2 = ori_lm_weights - lm_weights
+                #     print(torch.norm(diff2[-unlearn_token_num:], p=2))
+
+                print(f"Epoch {epoch} | Time: {time.time() - start_time} | Loss: {epoch_loss / len(dataloader)}")
+
+                question = forget_ds[-1]["question"]
+                unlearn_token = unlearn_tokens[forget_ds[-1]["unlearn_token_id"]]  # <unlearn_0>
+                question0 = forget_ds[0]["question"]
+                unlearn_token0 = unlearn_tokens[forget_ds[0]["unlearn_token_id"]]
+
+                if not use_chat_template:
+                    test0 = methods.local_generate_unlearn(model, tokenizer, question0,
+                                                           unlearn_token0, False)
+                    test = methods.local_generate_unlearn(model, tokenizer, question,
+                                                          unlearn_token, False)
+                    print(f"[Without chat_template Test]: {test0}")
+                    print(f"[Without chat_template Test]: {test}")
+                else:
+                    test0 = methods.local_generate_unlearn(model, tokenizer, question0,
+                                                           unlearn_token0, True)
+                    test = methods.local_generate_unlearn(model, tokenizer, question,
+                                                          unlearn_token, True)
+                    print(f"[With chat_template Test]: {test0}")
+                    print(f"[With chat_template Test]: {test}")
+
+                print("-" * 50)
 
 
-            if not use_chat_template:
-                test0 = methods.local_generate_unlearn(model, tokenizer, question0,
-                                                      unlearn_token0, False)
-                test = methods.local_generate_unlearn(model, tokenizer, question,
-                                                      unlearn_token, False)
-                print(f"[Without chat_template Test]: {test0}")
-                print(f"[Without chat_template Test]: {test}")
-            else:
-                test0 = methods.local_generate_unlearn(model, tokenizer, question0,
-                                                      unlearn_token0, True)
-                test = methods.local_generate_unlearn(model, tokenizer, question,
-                                                      unlearn_token, True)
-                print(f"[With chat_template Test]: {test0}")
-                print(f"[With chat_template Test]: {test}")
+    if task == "RETURN":
+        # num_epochs1 = 20
+        # num_epochs2 = 12
+        # num_epochs3 = 8
+        num_epochs1 = 5
+        num_epochs2 = 3
+        num_epochs3 = 2
+    else:
+        num_epochs1 = 5
+        num_epochs2 = 3
+        num_epochs3 = 2
+    train(model, dataloader, num_epochs=num_epochs1, lr=1e-3)
 
-            print("-" * 50)
+    use_chat_template = True
 
+    forget_ds_1 = Dataset.from_list(forget_ds)
+    forget_ds_1 = forget_ds_1.map(format_for_sft, batched=False)
+    forget_ds_1.set_format(type="torch",
+                           columns=["input_ids", "attention_mask", "labels", "ground_truth_ids", "unlearn_token_id"])
+    new_dataloader = DataLoader(forget_ds_1, batch_size=batch_size, shuffle=False)
 
-if task == "RETURN":
-    # num_epochs1 = 20
-    # num_epochs2 = 12
-    # num_epochs3 = 8
-    num_epochs1 = 5
-    num_epochs2 = 3
-    num_epochs3 = 2
-else:
-    num_epochs1 = 5
-    num_epochs2 = 3
-    num_epochs3 = 2
-train(model, dataloader, num_epochs=num_epochs1, lr=1e-3)
+    # 合并 Dataset
+    combined_dataset = ConcatDataset([dataloader.dataset, new_dataloader.dataset])
+    combined_dataloader = DataLoader(
+        combined_dataset,
+        batch_size=batch_size,
+        shuffle=False  # 是否打乱合并后的数据
+    )
 
-use_chat_template = True
+    train(model, combined_dataloader, num_epochs=num_epochs2, lr=1e-4)
 
-forget_ds_1 = Dataset.from_list(forget_ds)
-forget_ds_1 = forget_ds_1.map(format_for_sft, batched=False)
-forget_ds_1.set_format(type="torch", columns=["input_ids", "attention_mask", "labels", "ground_truth_ids", "unlearn_token_id"])
-new_dataloader = DataLoader(forget_ds_1, batch_size=batch_size, shuffle=False)
+    layer_ids = [4, 5, 6, 7, 8]
+    for layer in layer_ids:
+        train(model, combined_dataloader, num_epochs=num_epochs3, lr=1e-4, weight_augment=True, layer_ids=[layer])
 
-# 合并 Dataset
-combined_dataset = ConcatDataset([dataloader.dataset, new_dataloader.dataset])
-combined_dataloader = DataLoader(
-    combined_dataset,
-    batch_size=batch_size,
-    shuffle=False  # 是否打乱合并后的数据
-)
+    hook1.remove()
+    if hook2 is not None:
+        hook2.remove()
 
-train(model, combined_dataloader, num_epochs=num_epochs2, lr=1e-4)
+    print("model_path: ", model_path)
 
+    if task == "original":
+        save_dir = f"{model_path}-UL_tofu_no_share"
+    else:
+        save_dir = f"{model_path}-{task}-{stage}-UL_tofu_no_share"
+    os.makedirs(save_dir, exist_ok=True)
+    model.save_pretrained(save_dir)
+    tokenizer.save_pretrained(save_dir)
+    print("saved as: ", save_dir)
+    torch.cuda.synchronize()
+    end_time = time.time()
+    print(f"Total time for training: {end_time - start_time} seconds")
 
-layer_ids = [4, 5, 6, 7, 8]
-for layer in layer_ids:    
-    train(model, combined_dataloader, num_epochs=num_epochs3, lr=1e-4, weight_augment=True, layer_ids=[layer])
-
-
-hook1.remove()
-if hook2 is not None:
-    hook2.remove()
-
-print("model_path: ", model_path)
-
-if task == "original":
-    save_dir = f"{model_path}-UL_tofu_no_share"
-else:
-    save_dir = f"{model_path}-{task}-{stage}-UL_tofu_no_share"
-os.makedirs(save_dir, exist_ok=True)
-model.save_pretrained(save_dir)
-tokenizer.save_pretrained(save_dir)
-print("saved as: ", save_dir)
-torch.cuda.synchronize()
-end_time = time.time()
-print(f"Total time for training: {end_time - start_time} seconds")
+if __name__ == "__main__":
+    main()
